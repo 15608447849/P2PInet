@@ -238,17 +238,12 @@ public class ServerCLI implements CompletionHandler<Integer,ByteBuffer> {
     }
 
 
-    /**处理客户端消息
-     * 使用反射
-     * */
     private boolean handlerMessage(HashMap<String, Object> map) {
         if (map==null) return false;
-        byte command = (byte) map.get(Parse._protocol);
-        Intent intent = new Intent();
-        intent.putMap(map);
-        intent.putOperate(operate);
-        intent.putServerCLI(this);
-        return Excute.Server.get().obtain(command,intent);
+        return Excute.handlerMessage(Excute.SERVER,new Object[]{map,this});
     }
 
+    public IOperate getOperate() {
+        return operate;
+    }
 }

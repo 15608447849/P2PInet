@@ -23,6 +23,7 @@ public class Parse {
     public static final String _macBytes = "macBytes";
 
     public static final String _localSourceBytes = "_sourceNameBytes";
+    public static final String _connectTaskBytes = "connectTaskBytes";
 
 
 

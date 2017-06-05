@@ -1,6 +1,7 @@
 package client.socketimp;
 
 import protocol.Command;
+import protocol.Excute;
 import protocol.Parse;
 import utils.LOG;
 
@@ -26,16 +27,16 @@ public class SocketHandler extends Thread implements CompletionHandler<Integer, 
 
     @Override
     public void completed(Integer i, ByteBuffer byteBuffer) {
-
-           LOG.I("读取到内容 ,长度:"+i+" , "+byteBuffer);
+//           LOG.I("读取到内容 ,长度:"+i+" , "+byteBuffer);
        if (i==-1){
            manager.closeConnect();
            manager.connectServer();
        }else{
-           //处理
-           handler(byteBuffer);
+           HashMap<String,Object> map = Parse.message(byteBuffer);
            //读取
            read(byteBuffer);
+           //处理
+           handlerMessage(map);
        }
     }
     //读取
@@ -43,9 +44,10 @@ public class SocketHandler extends Thread implements CompletionHandler<Integer, 
         byteBuffer.clear();
         manager.socket.read(byteBuffer,byteBuffer,this);
     }
-    //处理
-    private void handler(ByteBuffer byteBuffer) {
-        LOG.I("收到: "+ byteBuffer);
+    //处理消息
+    private boolean handlerMessage(HashMap<String, Object> map) {
+        if (map==null) return false;
+        return Excute.handlerMessage(Excute.CLIENT,new Object[]{map,manager});
     }
 
     @Override

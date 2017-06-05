@@ -21,10 +21,15 @@ public class Command {
         /**
          * 通知-同步资源
          * sync
-         *{命令2,数据长度,LocalSource对象bytes}
+         *{命令2,数据长度,Source对象bytes}
          *
          */
         public static final byte synchronizationSource = 2;
+        /**
+         * 资源请求者请求通讯服务器,对资源源 发起连接,(搭桥开始)
+         * {命令3,数据长度,connectTask对象}
+         */
+        public static final byte connectSourceClient = 3;
     }
 
     /**

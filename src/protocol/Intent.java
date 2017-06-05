@@ -1,5 +1,7 @@
 package protocol;
 
+import client.socketimp.SocketManager;
+import client.sourceimp.SourceManager;
 import server.abs.IOperate;
 import server.obj.ServerCLI;
 
@@ -10,6 +12,7 @@ import java.util.HashMap;
  * 数据传递
  */
 public class Intent {
+    private byte command;
     private HashMap<String,Object> map;
     private IOperate operate;
     private ServerCLI serverCli;
@@ -35,5 +38,32 @@ public class Intent {
 
     public IOperate getOperate() {
         return operate;
+    }
+
+    public void putCommand(byte command) {
+        this.command = command;
+    }
+
+    public byte getCommand() {
+        return command;
+    }
+
+
+
+
+
+
+
+
+
+
+    private SocketManager socketManager;
+
+    public SocketManager getSourceManager() {
+        return socketManager;
+    }
+
+    public void putSocketManager(SocketManager socketManager) {
+        this.socketManager = socketManager;
     }
 }

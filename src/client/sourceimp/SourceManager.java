@@ -16,16 +16,25 @@ import java.util.concurrent.locks.ReentrantLock;
  *  文件资源管理器
  */
 public class SourceManager {
-//    private final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();
 //    private final HashSet<SerializeSource> list = new HashSet<>();
     private final FindFileVisitor fonder;
     public SourceManager(String homeDirs) {
         this.fonder = new FindFileVisitor(homeDirs);
     }
 
-    public List<File> fondSoure(String fileName){
-        if (fileName==null || fileName.length()==0) return null;
-        return fonder.setFindFileName(fileName).find();
+    public boolean ergodicSoure(SerializeSource source){
+        try{
+            lock.lock();
+            if (source==null) new IllegalAccessError("sorce is not exist.");
+            List<File> list =  fonder.setQuerySource(source).ergodicAll();
+            //没找到
+            if (list.size()==0) return false;
+            return true;
+        }finally {
+            lock.unlock();
+        }
+
     }
 
 //    public boolean add(SerializeSource task){

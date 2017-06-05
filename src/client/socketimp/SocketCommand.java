@@ -1,5 +1,6 @@
 package client.socketimp;
 
+import client.obj.SerializeConnectTask;
 import client.obj.SerializeSource;
 import protocol.Command;
 import protocol.Parse;
@@ -47,16 +48,38 @@ public class SocketCommand {
     public void synchronizationSource(SerializeSource source) throws IOException {
         if (manager.isValid()){
             byte[] mac = manager.info.getLocalMac();//mac地址
-            byte[] sourceArr = Parse.sobj2Bytes((Object) source);//资源
-            byte[] length = Parse.int2bytes(mac.length+sourceArr.length);//长度
-            ByteBuffer buffer = ByteBuffer.allocate(1+length.length+mac.length+sourceArr.length);
+            source.setInitiatorMacAddress(manager.info.getLocalMac());//设置资源同步发起者MAC
+            byte[] sourceArr = Parse.sobj2Bytes(source);//资源
+            byte[] length = Parse.int2bytes(sourceArr.length);//长度
+            ByteBuffer buffer = ByteBuffer.allocate(1+length.length+sourceArr.length);
             buffer.clear();
             buffer.put(Command.Client.synchronizationSource);
             buffer.put(length);
-            buffer.put(mac);
             buffer.put(sourceArr);
             buffer.flip();
             manager.socket.write(buffer);
         }
     }
+
+    /**
+     * 发起连接建立请求
+     * @param connTask
+     */
+    public void connectSourceClient(SerializeConnectTask connTask) throws IOException {
+        if (manager.isValid()){
+            byte[] mac = manager.info.getLocalMac();//mac地址
+            connTask.setRequestHostMac(manager.info.getLocalMac());
+            byte[] sourceArr = Parse.sobj2Bytes(connTask);//资源
+            byte[] length = Parse.int2bytes(sourceArr.length);//长度
+            ByteBuffer buffer = ByteBuffer.allocate(1+length.length+sourceArr.length);
+            buffer.clear();
+            buffer.put(Command.Client.connectSourceClient);//搭桥请求
+            buffer.put(length);
+            buffer.put(sourceArr);
+            buffer.flip();
+            manager.socket.write(buffer);
+        }
+    }
+
+
 }

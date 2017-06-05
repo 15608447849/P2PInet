@@ -16,26 +16,46 @@ public class ParseOpers {
         }
         //同步资源
         if (protocol == Command.Client.synchronizationSource){
-            synchronizedSource(map,length,data);
+            synchronizedSource(map,data);
+        }
+        //服务器下发资源信息
+        if (protocol == Command.Server.trunSynchronizationSource){
+            trunSynchronizationSource(map,data);
+        }
+        if (protocol == Command.Client.connectSourceClient){
+            connectSourceClient(map,data);
         }
     }
 
     /**
-     * 同步数据
+     * 客户端发起的搭桥请求
+     * {connectTask对象}
      */
-    private static void synchronizedSource(HashMap<String, Object> map, int length, byte[] data) {
-        byte[] macBytes = new byte[6];
-        System.arraycopy(data, 0, macBytes, 0, 6);
-        byte[] sourceBytes = new byte[length-6];
-        System.arraycopy(data, 6, sourceBytes, 0, length-6);
+    private static void connectSourceClient(HashMap<String, Object> map, byte[] data) {
+        map.put(_connectTaskBytes, data);
+    }
 
-        map.put(_macBytes, macBytes);
-        map.put(_localSourceBytes, sourceBytes);
+    /**
+     * 服务器下发资源,检查同步
+     * {"source对象"}
+     */
+    private static void trunSynchronizationSource(HashMap<String, Object> map,byte[] data) {
+        //复用方法 - 因为本来就转发
+        synchronizedSource(map,data);
+    }
+
+    /**
+     * 同步数据
+     * {"source对象"}
+     */
+    private static void synchronizedSource(HashMap<String, Object> map,byte[] data) {
+        map.put(_localSourceBytes, data);
     }
 
 
     /**
      * 解析 客户端心跳数据包
+     * {客户端本机ip,本机端口,本机mac}
      */
     private static void hearbeat(HashMap<String, Object> map, byte[] data) {
         //  [ip,port,mac] - [4byte+4byte+6byte]

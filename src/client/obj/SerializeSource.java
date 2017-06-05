@@ -1,6 +1,7 @@
 package client.obj;
 
 import utils.MD5Util;
+import utils.NetUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +15,10 @@ import java.io.Serializable;
  */
 public class SerializeSource implements Serializable{
 
+    /**
+     * 资源同步发起者的mac地址
+     */
+    private byte[] initiatorMacAddress;
     /**
      * 相对路径
      */
@@ -31,23 +36,6 @@ public class SerializeSource implements Serializable{
         this.position = position;
         this.md5Hash = MD5Util.getFileMD5String(file);
     }
-
-    public void setPosition(String position) {
-        this.position = position;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public void setFileLength(long fileLength) {
-        this.fileLength = fileLength;
-    }
-
-    public void setMd5Hash(String md5Hash) {
-        this.md5Hash = md5Hash;
-    }
-
     public String getPosition() {
         return position;
     }
@@ -63,10 +51,19 @@ public class SerializeSource implements Serializable{
     public String getMd5Hash() {
         return md5Hash;
     }
+
+    public void setInitiatorMacAddress(byte[] initiatorMacAddress) {
+        this.initiatorMacAddress = initiatorMacAddress;
+    }
+    //资源发起者
+    public byte[] getInitiatorMacAddress() {
+        return initiatorMacAddress;
+    }
     @Override
     public String toString(){
         StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append("资源位置: "+position);
+        stringBuffer.append("资源发起者MAC: " + NetUtil.macByte2String(initiatorMacAddress));
+        stringBuffer.append(" 资源位置: "+position);
         stringBuffer.append(" ,资源名: "+fileName);
         stringBuffer.append(" ,资源大小: "+fileLength);
         stringBuffer.append(" ,资源MD5-hash: "+md5Hash);

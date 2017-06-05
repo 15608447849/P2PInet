@@ -22,15 +22,10 @@ public class CLIWrite {
      * -如果有结果返回 : 对方mac地址,本地文件的文件全路径
      */
     public void synchronizationSourceIssued(byte[] hostMacBytes,byte[] source) {
-//        LOG.I(client+">>>");
-//        LOG.I(String.valueOf( client.getMac()!=null ));
-//        LOG.I(String.valueOf( !NetUtil.macByte2String(hostMacBytes).equals(client.getMac()) ));
-//        LOG.I(String.valueOf( client.isValid() ));
         if (client.getMac() != null
                 &&  !NetUtil.macByte2String(hostMacBytes).equals(client.getMac())
                 && client.isValid()){
-
-               int len = hostMacBytes.length+source.length;
+               int len = source.length;
                byte[] lengthBytes = Parse.int2bytes(len);
                ByteBuffer buff = ByteBuffer.allocate(1+lengthBytes.length+len);
                 buff.put(Command.Server.trunSynchronizationSource);//命令

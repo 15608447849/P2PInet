@@ -1,5 +1,7 @@
 package utils;
 
+import client.obj.SerializeSource;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -13,15 +15,16 @@ import java.util.ArrayList;
 public class FindFileVisitor extends SimpleFileVisitor<Path> {
     private ArrayList<File> fileList = new ArrayList<>();
     private Path homeDir;
-    private String fileName = null;
+    private SerializeSource source = null;
     public FindFileVisitor(String homeDir) {
        this.homeDir = Paths.get(homeDir);
     }
-    public FindFileVisitor setFindFileName(String fileName){
-        this.fileName = fileName;
+
+    public FindFileVisitor setQuerySource(SerializeSource source){
+        this.source = source;
         return this;
     }
-    public ArrayList<File> find(){
+    public ArrayList<File> ergodicAll(){
         try {
             fileList.clear();
             long time = System.currentTimeMillis();
@@ -32,13 +35,34 @@ public class FindFileVisitor extends SimpleFileVisitor<Path> {
         }
         return fileList;
     }
+
+    public boolean ergodicOnes(){
+            Path fileParh = Paths.get(source.getPosition());
+            File file = fileParh.toFile();
+            return equalsMD5(file,source.getMd5Hash());
+    }
     @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-        if (file.toFile().getName().equals(fileName)) {
-            fileList.add(file.toFile());
+    public FileVisitResult visitFile(Path filePath, BasicFileAttributes attrs) {
+            File file = filePath.toFile();
+        if ( file.getName().equals(source.getFileName()) || file.length() == source.getFileLength()) {
+            //比较md5
+            if (equalsMD5(file,source.getMd5Hash())){
+                fileList.add(file);
+            }
         }
         return FileVisitResult.CONTINUE;
     }
+    //比较md5
+    private boolean equalsMD5(File file, String sourceMD5) {
+        try {
+            String localFileMD5 = MD5Util.getFileMD5String(file);
+            if (localFileMD5.equals(sourceMD5)) return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     @Override
     public FileVisitResult visitFileFailed(Path path, IOException e) throws IOException {
         return FileVisitResult.SKIP_SUBTREE;
