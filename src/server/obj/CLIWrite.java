@@ -30,7 +30,6 @@ public class CLIWrite {
                ByteBuffer buff = ByteBuffer.allocate(1+lengthBytes.length+len);
                 buff.put(Command.Server.trunSynchronizationSource);//命令
                 buff.put(lengthBytes);//长度
-                buff.put(hostMacBytes);//资源源头mac地址
                 buff.put(source);//资源信息序列化对象
                 buff.flip();
                client.getSocket().write(buff);

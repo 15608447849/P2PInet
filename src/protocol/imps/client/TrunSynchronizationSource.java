@@ -32,7 +32,6 @@ public class TrunSynchronizationSource  implements Excute.IAction{
             SerializeConnectTask connTask = new SerializeConnectTask(sourceBytes);
             //发送到服务器
             manager.commander.connectSourceClient(connTask);
-
         } catch (Exception e) {
             e.printStackTrace();
         }

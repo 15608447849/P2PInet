@@ -26,11 +26,10 @@ public class SourceManager {
     public boolean ergodicSoure(SerializeSource source){
         try{
             lock.lock();
-            if (source==null) new IllegalAccessError("sorce is not exist.");
+            if (source==null) new NullPointerException("source is not exist.");
             List<File> list =  fonder.setQuerySource(source).ergodicAll();
             //没找到
-            if (list.size()==0) return false;
-            return true;
+            if (list.size()==0) return false;else return true;
         }finally {
             lock.unlock();
         }
