@@ -24,7 +24,6 @@ public class Main {
 //            launchClient();
             startSource("/psb.jpg");
 
-
     }
 
 
@@ -63,7 +62,7 @@ public class Main {
              */
             String homeDirs = "C:\\FileServerDirs\\temp";
             int port =  new Random().nextInt(10000)%(65535-10000+1) + 10000;
-            InetSocketAddress local = new InetSocketAddress("172.16.0.200",port);
+            InetSocketAddress local = new InetSocketAddress("172.16.0.55",port);
             InetSocketAddress server = new InetSocketAddress("172.16.0.200",9999);
             Info info = new Info(local,server);
             SourceManager sourceManager = new SourceManager(homeDirs);
