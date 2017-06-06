@@ -56,6 +56,14 @@ public class Command {
          * 请求目的客户端连接
          */
         public static final byte queryConnectUdp_der = 103;
+        /**
+         * 收到 源客户端 udp 心跳回执
+         */
+        public static final byte udpServerReceiveHeartbeatSuccess = 110;
+        /**
+         * 发送给 源客户端 ,目标客户端NET信息
+         */
+        public static final byte udpSourceDestNetAddress = 111;
     }
 
 }

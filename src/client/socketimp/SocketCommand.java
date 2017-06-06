@@ -4,6 +4,7 @@ import client.obj.SerializeConnectTask;
 import client.obj.SerializeSource;
 import protocol.Command;
 import protocol.Parse;
+import utils.LOG;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -48,7 +49,7 @@ public class SocketCommand {
     public void synchronizationSource(SerializeSource source) throws IOException {
         if (manager.isValid()){
             byte[] mac = manager.info.getLocalMac();//mac地址
-            source.setInitiatorMacAddress(manager.info.getLocalMac());//设置资源同步发起者MAC
+            source.setInitiatorMacAddress(mac);//设置资源同步发起者MAC
             byte[] sourceArr = Parse.sobj2Bytes(source);//资源
             byte[] length = Parse.int2bytes(sourceArr.length);//长度
             ByteBuffer buffer = ByteBuffer.allocate(1+length.length+sourceArr.length);
@@ -58,6 +59,7 @@ public class SocketCommand {
             buffer.put(sourceArr);
             buffer.flip();
             manager.socket.write(buffer);
+            LOG.I("通知服务器,终端同步资源: "+ source);
         }
     }
 
@@ -68,7 +70,7 @@ public class SocketCommand {
     public void connectSourceClient(SerializeConnectTask connTask) throws IOException {
         if (manager.isValid()){
             byte[] mac = manager.info.getLocalMac();//mac地址
-            connTask.setRequestHostMac(manager.info.getLocalMac());
+            connTask.setRequestHostMac(mac);
             byte[] sourceArr = Parse.sobj2Bytes(connTask);//资源
             byte[] length = Parse.int2bytes(sourceArr.length);//长度
             ByteBuffer buffer = ByteBuffer.allocate(1+length.length+sourceArr.length);

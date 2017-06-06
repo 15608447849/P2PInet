@@ -10,4 +10,5 @@ public interface IThreadInterface {
     void setPort(int start,int end);
     void putNewTask(SerializeConnectTask udpTemporary);
     void putUseConnect(int port, UDPTemporary udpTemporary);
+    void removePort(int port);
 }

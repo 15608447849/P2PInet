@@ -47,7 +47,7 @@ public class Parse {
         try {
             //获取协议, 获取数据长度, 获取数据块
             byte protocol = byteBuffer.get(0);//协议
-            LOG.E("协议编号:"+protocol);
+//            LOG.E("协议编号:"+protocol);
             map.put(_protocol, protocol);
             //数据块
             byte[] data = null;

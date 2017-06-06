@@ -14,7 +14,7 @@ import java.util.HashMap;
  * Created by user on 2017/6/5.
  * 服务器通知客户端 检查是否存在 某资源,不存在进行同步
  */
-public class TrunSynchronizationSource  implements Excute.IAction{
+public class TurnSynchronizationSource implements Excute.IAction{
     @Override
     public void action(Intent intent) {
         try {

@@ -23,6 +23,8 @@ public class Main {
 //            launchServer();
 //            launchClient();
             startSource("/psb.jpg");
+
+
     }
 
 
@@ -98,7 +100,6 @@ public class Main {
 
                 try {
                     SerializeSource source = new SerializeSource(new File(homeDirs+savePath),savePath);
-                    LOG.I("通知服务器终端同步资源: "+ source);
                     manager.commander.synchronizationSource(source);
                 } catch (Exception e) {
                     e.printStackTrace();

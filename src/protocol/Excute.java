@@ -46,7 +46,9 @@ public class Excute {
         private static final String suffix = "client.";
         private Client(){
             //服务器下发同步资源
-            map.put(Command.Server.trunSynchronizationSource,clsPrefix+suffix+"TrunSynchronizationSource");//服务器下发资源
+            map.put(Command.Server.trunSynchronizationSource,clsPrefix+suffix+"TurnSynchronizationSource");//服务器下发资源
+            //资源客户端收到 服务器的UDP连接请求
+            map.put(Command.Server.queryConnectUdp_source,clsPrefix+suffix+"QueryConnectUdp_source");
 //            LOG.I("客户端处理指令集合:"+map);
         }
        private static class Holder{

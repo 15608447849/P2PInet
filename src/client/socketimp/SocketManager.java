@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
+import java.util.HashSet;
 import java.util.concurrent.Executors;
 
 /**
@@ -18,6 +19,7 @@ import java.util.concurrent.Executors;
  *  连接
  */
 public class SocketManager implements CompletionHandler<Void, Void> {
+
 
     public Info info;
     public AsynchronousSocketChannel socket;
@@ -40,6 +42,7 @@ public class SocketManager implements CompletionHandler<Void, Void> {
             socket.setOption(StandardSocketOptions.SO_KEEPALIVE,true);
             socket.setOption(StandardSocketOptions.SO_REUSEADDR,true);
             socket.connect(info.getServerAddress(), null, this);
+            PortManager.get().addPort(info.getLocalAddress().getPort());
         } catch (IOException e) {
             e.printStackTrace();
         }

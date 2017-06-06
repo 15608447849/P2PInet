@@ -46,14 +46,15 @@ public class CLIWrite {
     public boolean notifyConnect(byte cmd,SerializeConnectTask connectTask) {
         if (client.isValid()){
             try {
-                byte[] datas = Parse.sobj2Bytes(connectTask);
-                int len = datas.length;
+                byte[] data = Parse.sobj2Bytes(connectTask);
+                int len = data.length;
                 byte[] lenBytes =  Parse.int2bytes(len);
                 ByteBuffer buff = ByteBuffer.allocate(1+lenBytes.length+len);
                 buff.put(cmd);//命令
                 buff.put(lenBytes);//长度
-                buff.put(datas);//资源信息序列化对象
+                buff.put(data);//资源信息序列化对象
                 buff.flip();
+                LOG.I(client+ " 发送 "+buff);
                 client.getSocket().write(buff);
                 return true;
             } catch (IOException e) {

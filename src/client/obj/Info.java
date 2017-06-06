@@ -1,5 +1,6 @@
 package client.obj;
 
+import utils.LOG;
 import utils.NetUtil;
 
 import java.net.InetAddress;
@@ -28,6 +29,7 @@ public class Info {
         this.localAddress = localAddress;
         this.serverAddress = serverAddress;
         this.localMac = NetUtil.getMACAddress(localAddress.getAddress());
+
     }
 
     public InetSocketAddress getLocalAddress() {

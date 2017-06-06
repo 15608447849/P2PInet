@@ -66,17 +66,13 @@ public class UDPConnect extends IThread implements IThreadInterface {
     }
     //分配工作 1 随机获取一个未使用的UDP端口 ,2 创建UDP临时连接对象 3 端口-对象添加映射
     private void assignWork(SerializeConnectTask task) {
-        int randomPort =  assignPort();
-        LOG.E("分配端口: "+randomPort);
-        createTemp(randomPort,task);
+        createTemp(assignPort(),task);
     }
 
     private void createTemp(int port,SerializeConnectTask task) {
         try {
             InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByAddress(ipBytes),port);
-
-            UDPTemporary temporary = new UDPTemporary(socketAddress,task,operate,this);
-
+            new UDPTemporary(socketAddress,task,operate,this);
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -112,6 +108,16 @@ public class UDPConnect extends IThread implements IThreadInterface {
         try{
             lock.lock();
             useUDPConnect.put(port,udpTemporary);
+        }finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
+    public void removePort(int port) {
+        try{
+            lock.lock();
+            useUDPConnect.remove(port);
         }finally {
             lock.unlock();
         }

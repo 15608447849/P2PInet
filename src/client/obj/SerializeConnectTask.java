@@ -1,6 +1,7 @@
 package client.obj;
 
 import protocol.Parse;
+import utils.LOG;
 import utils.NetUtil;
 
 import java.io.IOException;
@@ -76,10 +77,13 @@ public class SerializeConnectTask implements Serializable {
     }
 
     public String getSourceMac() {
+
         return NetUtil.macByte2String(requestHostMac);
     }
 
     public String getDestinationMac() throws IOException, ClassNotFoundException {
-        return NetUtil.macByte2String(((SerializeSource)Parse.bytes2Sobj(source)).getInitiatorMacAddress());
+        SerializeSource sourceObj = (SerializeSource)Parse.bytes2Sobj(source);
+        if (sourceObj==null) return null;
+        return NetUtil.macByte2String(sourceObj.getInitiatorMacAddress());
     }
 }

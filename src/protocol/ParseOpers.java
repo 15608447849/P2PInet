@@ -24,9 +24,31 @@ public class ParseOpers {
         if (protocol == Command.Server.trunSynchronizationSource){
             trunSynchronizationSource(map,data);
         }
+        //资源需求客户端 请求 服务器 建立与 资源源 的连接
         if (protocol == Command.Client.connectSourceClient){
             connectSourceClient(map,data);
         }
+        //资源源 收到服务器发送的 UDP端口信息,建立连接
+        if (protocol == Command.Server.queryConnectUdp_source){
+            queryConnectUdp_source(map,data);
+        }
+        //索求资源客户端 收到 服务器发来 的 udp连接请求,建立UDP连接
+        if (protocol == Command.Server.queryConnectUdp_der){
+            queryConnectUdp_der(map,data);
+        }
+    }
+    /**
+     * 索求资源客户端收到服务器的连接请求
+     */
+    private static void queryConnectUdp_der(HashMap<String, Object> map, byte[] data) {
+        map.put(_connectTaskBytes,data);
+    }
+
+    /**
+     * 资源客户端收到服务器的连接请求
+     */
+    private static void queryConnectUdp_source(HashMap<String, Object> map, byte[] data) {
+        map.put(_connectTaskBytes,data);
     }
 
     /**

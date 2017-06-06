@@ -122,22 +122,20 @@ public class P2POperate extends Thread implements IOperate {
 
     @Override
     public ServerCLI getClientByMac(String mac) {
-
         try{
             lock.lock();
-            Iterator<ServerCLI> iterator = set.iterator();
+            final Iterator<ServerCLI> iterator = set.iterator();
             ServerCLI client;
-            if (iterator.hasNext()){
+            while (iterator.hasNext()){
                 client = iterator.next();
                 if (client.getMac().equals(mac)){
-                    return client;
+                   return client;
                 }
             }
             return null;
         }finally {
             lock.unlock();
         }
-
     }
 
 }
