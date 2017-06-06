@@ -50,7 +50,7 @@ public class Excute {
             //资源客户端收到 服务器的UDP连接请求
             map.put(Command.Server.queryConnectUdp_source,clsPrefix+suffix+"QueryConnectUdp_source");
             //索求资源客户端收到服务器的udo连接请求
-            map.put(Command.Server.queryConnectUdp_source,clsPrefix+suffix+"QueryConnectUdp_der");
+            map.put(Command.Server.queryConnectUdp_der,clsPrefix+suffix+"QueryConnectUdp_der");
 //            LOG.I("客户端处理指令集合:"+map);
         }
        private static class Holder{
