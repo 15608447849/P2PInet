@@ -1,10 +1,8 @@
 package server.imp;
 
-import server.abs.IOperate;
-import server.abs.IParameter;
-import server.abs.IServer;
-import server.abs.IThread;
+import server.abs.*;
 import server.imp.threads.AcceptClient;
+import server.imp.threads.UDPConnect;
 import server.obj.ServerInfo;
 import utils.LOG;
 
@@ -28,7 +26,15 @@ public class P2PServer implements IServer {
     public boolean isBind;
     //管理得线程
     public final HashMap<String,IThread> threadMap = new HashMap<>();
+    /**
+     * 操作手
+     */
     public IOperate operate;
+
+    /**
+     * UDP管理
+     */
+    private IThreadInterface udpManage;
     public P2PServer(int threadNunber) throws IOException {
         listener = AsynchronousServerSocketChannel.open(AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(threadNunber)));
     }
@@ -49,6 +55,13 @@ public class P2PServer implements IServer {
     @Override
     public void connectServer(IOperate operate) {
             this.operate = operate;
+            this.operate.setServer(this);
+    }
+
+    @Override
+    public  void createUdpManager(int startPort,int endPort){
+        if (udpManage==null) udpManage = new UDPConnect(this);
+        udpManage.setPort(startPort,endPort);
     }
 
     @Override
@@ -75,6 +88,8 @@ public class P2PServer implements IServer {
     public Object getParam(String name) {
         if (name.equals("listener")) return listener;
         if (name.equals("operate")) return operate;
+        if (name.equals("param")) return param;
+        if (name.equals("udp")) return udpManage;
         return null;
     }
 

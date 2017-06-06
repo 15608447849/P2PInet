@@ -1,5 +1,7 @@
 package protocol;
 
+import utils.LOG;
+
 import java.util.HashMap;
 
 import static protocol.Parse.*;

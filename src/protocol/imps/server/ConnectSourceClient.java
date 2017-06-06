@@ -6,6 +6,8 @@ import client.socketimp.SocketManager;
 import protocol.Excute;
 import protocol.Intent;
 import protocol.Parse;
+import server.abs.IThread;
+import server.abs.IThreadInterface;
 import utils.LOG;
 
 import java.util.HashMap;
@@ -22,10 +24,8 @@ public class ConnectSourceClient implements Excute.IAction {
             HashMap<String,Object> map = intent.getMap();
             SerializeConnectTask connTask = (SerializeConnectTask) Parse.bytes2Sobj((byte[]) map.get(Parse._connectTaskBytes));
             LOG.I("建立连接请求: "+ connTask.getSourceMac()+ " -> "+ connTask.getDestinationMac());
-
-            //打开一个随机端口...
-
-
+            IThreadInterface udpManager = (IThreadInterface) intent.getOperate().getServer().getParam("udp");
+            udpManager.putNewTask(connTask);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -43,6 +43,7 @@ public class Main {
         P2PServer server = new P2PServer(10);
         server.initServer(info);
         server.connectServer(operate);//连接操作
+        server.createUdpManager(7000,8000);
         server.startServer();
         }catch (IOException e) {
             e.printStackTrace();

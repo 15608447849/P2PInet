@@ -19,6 +19,10 @@ public interface IServer {
     void connectServer(IOperate operate);
 
     /**
+     * 创建udp管理
+     */
+    void createUdpManager(int startPort,int endPort);
+    /**
      * 开始服务
      */
     void startServer();

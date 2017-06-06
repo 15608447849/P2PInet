@@ -65,7 +65,7 @@ public class Excute {
         private Server(){
             map.put(Command.Client.heartbeat,clsPrefix+suffix+"Heartbeat");//tcp心跳
             map.put(Command.Client.synchronizationSource,clsPrefix+suffix+"SynchronizationSource");//资源同步
-            map.put(Command.Client.synchronizationSource,clsPrefix+suffix+"ConnectSourceClient");//请求建立连接
+            map.put(Command.Client.connectSourceClient,clsPrefix+suffix+"ConnectSourceClient");//请求建立连接
 //            LOG.I("服务器处理指令集合:"+map);
         }
         private static class Holder{

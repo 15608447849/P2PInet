@@ -1,10 +1,12 @@
 package server.obj;
 
+import client.obj.SerializeConnectTask;
 import protocol.Command;
 import protocol.Parse;
 import utils.LOG;
 import utils.NetUtil;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -34,5 +36,31 @@ public class CLIWrite {
                 buff.flip();
                client.getSocket().write(buff);
         }
+    }
+
+    /**
+     * Command.Server.
+     * queryConnectUdp_source
+     * queryConnectUdp_der
+     */
+    public boolean notifyConnect(byte cmd,SerializeConnectTask connectTask) {
+        if (client.isValid()){
+            try {
+                byte[] datas = Parse.sobj2Bytes(connectTask);
+                int len = datas.length;
+                byte[] lenBytes =  Parse.int2bytes(len);
+                ByteBuffer buff = ByteBuffer.allocate(1+lenBytes.length+len);
+                buff.put(cmd);//命令
+                buff.put(lenBytes);//长度
+                buff.put(datas);//资源信息序列化对象
+                buff.flip();
+                client.getSocket().write(buff);
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return false;
     }
 }

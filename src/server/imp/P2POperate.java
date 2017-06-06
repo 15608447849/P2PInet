@@ -1,6 +1,7 @@
 package server.imp;
 
 import server.abs.IOperate;
+import server.abs.IServer;
 import server.obj.ServerCLI;
 import utils.LOG;
 import utils.NetUtil;
@@ -31,6 +32,10 @@ public class P2POperate extends Thread implements IOperate {
 
     //监听超时时间
     private long time = 30 * 1000L;
+    /***
+     * 服务器
+     */
+    private IServer server;
 
     public P2POperate(int time) {
         this.time = time * 1000L;
@@ -78,6 +83,16 @@ public class P2POperate extends Thread implements IOperate {
     }
 
     @Override
+    public void setServer(IServer server) {
+        this.server = server;
+    }
+
+    @Override
+    public IServer getServer() {
+        return server;
+    }
+
+    @Override
     public void putCLI(ServerCLI client) {
         try{
             lock.lock();
@@ -103,6 +118,26 @@ public class P2POperate extends Thread implements IOperate {
         }finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public ServerCLI getClientByMac(String mac) {
+
+        try{
+            lock.lock();
+            Iterator<ServerCLI> iterator = set.iterator();
+            ServerCLI client;
+            if (iterator.hasNext()){
+                client = iterator.next();
+                if (client.getMac().equals(mac)){
+                    return client;
+                }
+            }
+            return null;
+        }finally {
+            lock.unlock();
+        }
+
     }
 
 }

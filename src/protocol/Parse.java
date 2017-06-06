@@ -1,5 +1,7 @@
 package protocol;
 
+import utils.LOG;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -22,7 +24,7 @@ public class Parse {
     public static final String _portInt = "portInt";
     public static final String _macBytes = "macBytes";
 
-    public static final String _localSourceBytes = "_sourceNameBytes";
+    public static final String _localSourceBytes = "localSourceBytes";
     public static final String _connectTaskBytes = "connectTaskBytes";
 
 
@@ -45,6 +47,7 @@ public class Parse {
         try {
             //获取协议, 获取数据长度, 获取数据块
             byte protocol = byteBuffer.get(0);//协议
+            LOG.E("协议编号:"+protocol);
             map.put(_protocol, protocol);
             //数据块
             byte[] data = null;

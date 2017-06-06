@@ -27,4 +27,14 @@ public class ServerInfo extends IParameter {
     public String getMac() {
         return NetUtil.macByte2String(localMac);
     }
+
+    @Override
+    public int getPort() {
+        return localAddress_1.getPort();
+    }
+
+    @Override
+    public byte[] getIpBytes() {
+        return localAddress_1.getAddress().getAddress();
+    }
 }

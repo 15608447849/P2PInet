@@ -18,6 +18,7 @@ public class SerializeConnectTask implements Serializable {
     /**
      * 服务器udp临时端口 - 服务器完成
      */
+    private byte[] serverTempUDPIp;
     int serverTempUDPPort = 0;
 
     /**
@@ -44,11 +45,12 @@ public class SerializeConnectTask implements Serializable {
     public void setRequestHostMac(byte[] requestHostMac){
         this.requestHostMac = requestHostMac;
     }
-    public void setServerTempUDPPort(int tempPort){
+    public void setServerTempUDP(byte[] tempIp, int tempPort){
+        this.serverTempUDPIp = tempIp;
         this.serverTempUDPPort = tempPort;
     }
-    public int getServerTempUDPPort() {
-        return serverTempUDPPort;
+    public InetSocketAddress getServerTempUDP() throws UnknownHostException {
+        return new InetSocketAddress(InetAddress.getByAddress(serverTempUDPIp),serverTempUDPPort);
     }
     //源
     public void setSrcNET(byte[] ip,int port){

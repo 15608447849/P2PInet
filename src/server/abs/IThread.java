@@ -1,5 +1,7 @@
 package server.abs;
 
+import server.obj.UDPTemporary;
+
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 
@@ -44,7 +46,6 @@ public abstract class IThread extends Thread  {
     }
 
     protected abstract void action();
-
 
 
 

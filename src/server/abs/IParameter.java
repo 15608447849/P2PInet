@@ -8,4 +8,12 @@ public abstract class IParameter {
     public String getMac() {
         return null;
     }
+
+    public int getPort() {
+        return -1;
+    }
+
+    public byte[] getIpBytes(){
+        return null;
+    }
 }

@@ -30,6 +30,13 @@ public class Command {
          * {命令3,数据长度,connectTask对象}
          */
         public static final byte connectSourceClient = 3;
+
+        /**
+         * UDP
+         * 资源源 发送心跳
+         */
+        public static final byte udpHeartbeat = 30;
+
     }
 
     /**
@@ -41,5 +48,14 @@ public class Command {
          *  {命令101,长度,资源需求主机MAC,资源名} -> 除这个mac之外的所有客户端
          */
         public static final byte trunSynchronizationSource = 101;
+        /**
+         * 请求资源源连接
+         */
+        public static final byte queryConnectUdp_source = 102;
+        /**
+         * 请求目的客户端连接
+         */
+        public static final byte queryConnectUdp_der = 103;
     }
+
 }
