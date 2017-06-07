@@ -1,11 +1,10 @@
 package protocol.imps.client;
 
-import client.Threads.TanslateSource;
+import client.Threads.Translate;
+import client.Threads.ClientA;
 import client.obj.SerializeConnectTask;
-import client.obj.SerializeSource;
 import client.socketimp.PortManager;
 import client.socketimp.SocketManager;
-import protocol.Excute;
 import protocol.Excute.IAction;
 import protocol.Intent;
 import protocol.Parse;
@@ -36,7 +35,11 @@ public class QueryConnectUdp_source implements IAction {
                 byte[] ip = manager.info.getLocalAddress().getAddress().getAddress();
                 InetSocketAddress localSocket = new InetSocketAddress(InetAddress.getByAddress(ip),port);
                 InetSocketAddress serverSocket = connectTask.getServerTempUDP();
-                new TanslateSource(manager.info.getLocalMac(),localSocket,serverSocket);
+                Translate tanslate = new Translate();
+                    tanslate.setMac(manager.info.getLocalMac());
+                    tanslate.setLocalSokcet(localSocket);
+                    tanslate.setServerSocket(serverSocket);
+                new ClientA(manager.info.getLocalMac(),localSocket,serverSocket);
             }
         }catch (Exception e){
             e.printStackTrace();

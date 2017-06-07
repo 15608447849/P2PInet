@@ -36,6 +36,14 @@ public class Command {
          * 资源源 发送心跳
          */
         public static final byte udpHeartbeat = 30;
+        /**
+         * 客户端A->B
+         */
+        public static final byte clientAshakePackage = 31;
+        /**
+         * 客户端B->A
+         */
+        public static final byte clienBshakePackage = 32;
 
     }
 

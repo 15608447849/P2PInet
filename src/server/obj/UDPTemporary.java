@@ -21,6 +21,7 @@ import java.util.Iterator;
  * Created by user on 2017/6/6.
  */
 public class UDPTemporary extends Thread{
+    private volatile boolean flag = true;
     private SerializeConnectTask connectTask;
     //本地suocket地址
     private InetSocketAddress socketAddress;
@@ -65,11 +66,11 @@ public class UDPTemporary extends Thread{
      */
     private void notifyClientAConnect() {
         boolean f = clientA.getWrite().notifyConnect(Command.Server.queryConnectUdp_source,connectTask);
-        LOG.I(this+ " 通知客户端:"+clientA+" 连接UDP. "+socketAddress + (f?"成功":"失败"));
+        LOG.I(this+ " 通知客户端A :"+clientA+" 连接UDP. "+socketAddress + (f?" 成功":" 失败"));
     }
     private void notifyClientBConnect() {
         boolean f = clientB.getWrite().notifyConnect(Command.Server.queryConnectUdp_der,connectTask);
-        LOG.I(this+ " 通知客户端:"+clientB+" 连接UDP. "+socketAddress + (f?"成功":"失败"));
+        LOG.I(this+ " 通知客户端B :"+clientB+" 连接UDP. "+socketAddress + (f?" 成功":" 失败"));
     }
 
 
@@ -94,10 +95,12 @@ public class UDPTemporary extends Thread{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        //通知A
         notifyClientAConnect();
         //开始读取
         try {
-            while (selector.select() > 0){
+
+            while (flag && selector.select() > 0){
                 Iterator iterator = selector.selectedKeys().iterator();
                 while (iterator.hasNext()) {
                     SelectionKey key;
@@ -127,52 +130,67 @@ public class UDPTemporary extends Thread{
 //            LOG.E("UDP "+this+" 接受到数据:"+ address+" ----> "+buffer);
             buffer.flip();
             byte cmd = buffer.get(0);
-            if (cmd == Command.Client.udpHeartbeat && connectTask.getCompele()==1){
+//             LOG.E("UDP "+this+" 接受到数据:"+ address+" ----> "+buffer+ " 命令:"+ cmd);
+            if (cmd == Command.Client.udpHeartbeat){
                 byte[] mac = new byte[6];
                 buffer.position(1);
                 buffer.get(mac,0,6);
-                LOG.I("对方MAC: "+ NetUtil.macByte2String(mac));
-                //记录net信息
-                if (NetUtil.macByte2String(mac).equals(clientA.getMac())){
-                    connectTask.setSrcNET(address.getAddress().getAddress(),socketAddress.getPort());
-                    connectTask.setComplete(2); //填充了源 net信息
-                    LOG.I("设置 源 net 信息,成功. "+connectTask.getCompele());
-                }
-                if (NetUtil.macByte2String(mac).equals(clientB.getMac())){
-                    connectTask.setDesNET(address.getAddress().getAddress(),socketAddress.getPort());
-                    connectTask.setComplete(3);
-                    LOG.I("设置 目的地 net 信息,成功. "+connectTask.getCompele());
+//                LOG.I("对方MAC: "+ NetUtil.macByte2String(mac));
+
+                if (connectTask.getCompele()==1){
+                    //记录net信息
+                    if (NetUtil.macByte2String(mac).equals(clientA.getMac())){
+
+                        connectTask.setSrcNET(address.getAddress().getAddress(),address.getPort());
+                        connectTask.setComplete(2); //填充了源 net信息
+                        LOG.I("设置 源 net 信息,成功. "+connectTask.getCompele());
+                    }
+                    if (connectTask.getCompele() == 2){
+                        //回复源
+                        buffer.clear();
+                        buffer.put(Command.Server.udpServerReceiveHeartbeatSuccess);
+                        buffer.flip();
+                        channel.send(buffer,address);
+                        //通知客户端B
+                        notifyClientBConnect();
+                    }
+                    return;
                 }
 
-                if (connectTask.getCompele() == 2){
-                    //回复源
-                    buffer.clear();
-                    buffer.put(Command.Server.udpServerReceiveHeartbeatSuccess);
-                    buffer.flip();
-                    channel.send(buffer,address);
-                    //通知客户端B
-                    notifyClientBConnect();
+                //设置客户端B的net信息
+                if (connectTask.getCompele()==2){
+                    if (NetUtil.macByte2String(mac).equals(clientB.getMac())){
+                        connectTask.setDesNET(address.getAddress().getAddress(),address.getPort());
+                        connectTask.setComplete(3);
+                        LOG.I("设置 目的地 net 信息,成功. "+connectTask.getCompele());
+                    }
+                    if (connectTask.getCompele() == 3){
+                        //回复目的地-客户端B :
+                        buffer.clear();
+                        buffer.put(Command.Server.udpServerReceiveHeartbeatSuccess);
+                        buffer.flip();
+                        channel.send(buffer,address);
+                    }
+                    return;
                 }
+
                 if (connectTask.getCompele() == 3){
-                    //回复目的地
-                    buffer.clear();
-                    buffer.put(Command.Server.udpServerReceiveHeartbeatSuccess);
-                    buffer.flip();
-                    channel.send(buffer,address);
-                    buffer.clear();
-                    buffer.put(Command.Server.udpSourceDestNetAddress);
-                    byte[] data =  Parse.sobj2Bytes(Parse.sobj2Bytes(connectTask));
-                    int len = data.length;
-                    byte[] lenBytes = Parse.int2bytes(len);
-                    buffer.put(lenBytes);
-                    buffer.put(data);
-                    //通知客户端A
-                    channel.send(buffer,connectTask.getSrcNET());
-
-                    //结束任务
-                    closeTask();
+                    //通知客户端A ,b的信息
+                    if (NetUtil.macByte2String(mac).equals(clientA.getMac())){
+                        buffer.clear();
+                        byte[] data = Parse.sobj2Bytes(connectTask);
+                        int len = data.length;
+                        byte[] lenBytes = Parse.int2bytes(len);
+                        buffer.put(Command.Server.udpSourceDestNetAddress);
+                        buffer.put(lenBytes);
+                        buffer.put(data);
+                        buffer.flip();
+                        LOG.I("客户端A,UDP : "+ address + "   "   +buffer);
+                        //通知客户端A
+                        channel.send(buffer,address);
+                        closeTask();
+                    }
                 }
-
             }
 
         } catch (IOException e) {
@@ -181,8 +199,8 @@ public class UDPTemporary extends Thread{
     }
     //结束任务
     private void closeTask() {
-        LOG.I("搭桥完成.关闭任务.");
 
+            flag = false;
         //关闭socket,返回端口
         try {
             channel.close();
@@ -199,6 +217,6 @@ public class UDPTemporary extends Thread{
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-
+        LOG.I("搭桥完成.关闭任务.");
     }
 }
