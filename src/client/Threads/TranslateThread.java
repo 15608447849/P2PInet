@@ -5,6 +5,7 @@ import protocol.Parse;
 import utils.LOG;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
@@ -52,7 +53,7 @@ public abstract class TranslateThread extends Thread{
                 isSend = onServerMessage(socket,byteBuffer);
             }
             synchronized (this){
-                wait(100);
+                wait(10);
             }
         }
     }
@@ -68,24 +69,28 @@ public abstract class TranslateThread extends Thread{
     protected void sendMessageToTerminal() throws Exception{
         ByteBuffer buffer = translate.getBuffer();
         int type = translate.getHolderType();
-        if (type != HOLDER_CLIENT_A || type != HOLDER_CLIENT_B) return;
+        if (!(type == HOLDER_CLIENT_A || type == HOLDER_CLIENT_B)) return;
         byte shakePackage = type == HOLDER_CLIENT_A?Command.Client.clientAshakePackage:Command.Client.clienBshakePackage;
+        int i = 0;
+        int max = 65535;
+        InetAddress inetAddress = translate.getTerminalSocket().getAddress();
         while (true){
             buffer.clear();
             buffer.put(shakePackage);
             buffer.flip();
-            translate.sendMessageToTarget(buffer, translate.getTerminalSocket(), translate.getChannel());
-
+//            translate.sendMessageToTarget(buffer, translate.getTerminalSocket(), translate.getChannel());
+            translate.sendMessageToTarget(buffer, new InetSocketAddress(inetAddress,i), translate.getChannel());
             buffer.clear();
             InetSocketAddress terminal = (InetSocketAddress) translate.getChannel().receive(buffer);
             if (terminal!=null && terminal.equals(translate.getTerminalSocket())){
                 buffer.flip();
-                LOG.I(TAG+"收到对端信息, "+ buffer.get(0));
+                LOG.I(TAG+"收到对端信息, " +terminal +"  -> "+ buffer.get(0));
                 break;
             }
-            synchronized (this){
-                wait(100);
-            }
+//            synchronized (this){
+//                wait(100);
+//            }
+            i++;
         }
     }
 
