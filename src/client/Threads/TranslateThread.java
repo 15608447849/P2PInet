@@ -9,58 +9,85 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
+import static client.Threads.Translate.HOLDER_CLIENT_A;
+import static client.Threads.Translate.HOLDER_CLIENT_B;
+
 /**
  * Created by user on 2017/6/7.
  */
 public abstract class TranslateThread extends Thread{
-    protected Translate tanslate;
 
-    public TranslateThread(Translate tanslate) {
-        this.tanslate = tanslate;
-        LOG.I("本机UDP地址>>"+tanslate.getLocalSokcet());
-        LOG.I("服务器UDP地址>>"+tanslate.getServerSocket());
+    protected final String TAG;
+    protected Translate translate;
+    public TranslateThread(Translate translate) {
+        this.translate = translate;
+        LOG.I("本机UDP地址>>"+translate.getLocalSokcet());
+        LOG.I("服务器UDP地址>>"+translate.getServerSocket());
+        TAG = translate.getHolderTypeName();
     }
     /**
      * 打开管道
      */
     protected void openChannel() throws Exception{
         DatagramChannel channel = DatagramChannel.open();
-        channel.bind(tanslate.getLocalSokcet());
+        channel.bind(translate.getLocalSokcet());
         channel.configureBlocking(false);
         ByteBuffer buffer = ByteBuffer.allocate(Parse.buffSize);
-        tanslate.setChannel(channel);
-        tanslate.setBuffer(buffer);
+        translate.setChannel(channel);
+        translate.setBuffer(buffer);
     }
     /**
      * 向服务器发送消息
      */
     protected void sendMessageToServer() throws Exception{
         boolean isSend = true;
-        ByteBuffer byteBuffer = tanslate.getBuffer();
+        ByteBuffer byteBuffer = translate.getBuffer();
         while (isSend){
             sendUdpHeartbeatToServer();//发送心跳到服务器
             byteBuffer.clear();
-            InetSocketAddress socket = (InetSocketAddress) tanslate.getChannel().receive(tanslate.getBuffer());
-            if (socket!=null && socket.equals(tanslate.getServerSocket())){
+            InetSocketAddress socket = (InetSocketAddress) translate.getChannel().receive(translate.getBuffer());
+            if (socket!=null && socket.equals(translate.getServerSocket())){
                 //收到服务器消息
                 byteBuffer.flip();
-                isSend = onServerMessage(byteBuffer);
+                isSend = onServerMessage(socket,byteBuffer);
             }
-            synchronized (this){
-                wait(1000 * 2);
-            }
+//            synchronized (this){
+//                wait(1000 * 2);
+//            }
         }
     }
     /**
      * 收到服务器的信息
      */
-    abstract boolean onServerMessage(ByteBuffer byteBuffer);
+    abstract boolean onServerMessage(InetSocketAddress socketAddress,ByteBuffer byteBuffer);
 
 
     /**
      * 向对端发送消息
      */
-    abstract void sendMessageToTerminal() throws Exception;
+    protected void sendMessageToTerminal() throws Exception{
+        ByteBuffer buffer = translate.getBuffer();
+        int type = translate.getHolderType();
+        if (type != HOLDER_CLIENT_A || type != HOLDER_CLIENT_B) return;
+        byte shakePackage = type == HOLDER_CLIENT_A?Command.Client.clientAshakePackage:Command.Client.clienBshakePackage;
+        while (true){
+            buffer.clear();
+            buffer.put(shakePackage);
+            buffer.flip();
+            translate.sendMessageToTarget(buffer, translate.getTerminalSocket(), translate.getChannel());
+
+            buffer.clear();
+            InetSocketAddress terminal = (InetSocketAddress) translate.getChannel().receive(buffer);
+            if (terminal!=null && terminal.equals(translate.getTerminalSocket())){
+                buffer.flip();
+                LOG.I(TAG+"收到对端信息, "+ buffer.get(0));
+                break;
+            }
+//            synchronized (this){
+//                this.wait(1000 * 2);
+//            }
+        }
+    }
 
     /**
      * 数据传输
@@ -95,12 +122,12 @@ public abstract class TranslateThread extends Thread{
      * 发送心跳到服务器
      */
     public void sendUdpHeartbeatToServer() throws IOException {
-            ByteBuffer buffer = tanslate.getBuffer();
+            ByteBuffer buffer = translate.getBuffer();
             buffer.clear();
             buffer.put(Command.Client.udpHeartbeat);
-            buffer.put(tanslate.getMac());
+            buffer.put(translate.getMac());
             buffer.flip();
-            tanslate.sendMessageToTarget(buffer,tanslate.getServerSocket(),tanslate.getChannel());
+            translate.sendMessageToTarget(buffer, translate.getServerSocket(), translate.getChannel());
     }
 
 

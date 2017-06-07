@@ -3,6 +3,7 @@ package protocol.imps.client;
 import client.Threads.Translate;
 import client.Threads.ClientB;
 import client.obj.SerializeConnectTask;
+import client.obj.SerializeSource;
 import client.socketimp.PortManager;
 import client.socketimp.SocketManager;
 import protocol.Excute.IAction;
@@ -33,12 +34,13 @@ public class QueryConnectUdp_der implements IAction {
                 InetSocketAddress localSocket = new InetSocketAddress(InetAddress.getByAddress(ip),port);
                 InetSocketAddress serverSocket = connectTask.getServerTempUDP();
                 InetSocketAddress sourceSocket = connectTask.getSrcNET();
-
-                Translate translate = new Translate();
+                SerializeSource source = connectTask.getSource();
+                Translate translate = new Translate(Translate.HOLDER_CLIENT_B);
                 translate.setMac(manager.info.getLocalMac());
                 translate.setLocalSokcet(localSocket);
                 translate.setServerSocket(serverSocket);
                 translate.setTerminalSocket(sourceSocket);
+                translate.setResource(source);
                 translate.checkServerIp(manager.info.getServerAddress());
                 new ClientB(translate);
             }

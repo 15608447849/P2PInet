@@ -82,8 +82,10 @@ public class SerializeConnectTask implements Serializable {
     }
 
     public String getDestinationMac() throws IOException, ClassNotFoundException {
-        SerializeSource sourceObj = (SerializeSource)Parse.bytes2Sobj(source);
-        if (sourceObj==null) return null;
-        return NetUtil.macByte2String(sourceObj.getInitiatorMacAddress());
+        return NetUtil.macByte2String(getSource().getInitiatorMacAddress());
+    }
+    public SerializeSource getSource() throws IOException, ClassNotFoundException {
+
+        return (SerializeSource)Parse.bytes2Sobj(source);
     }
 }

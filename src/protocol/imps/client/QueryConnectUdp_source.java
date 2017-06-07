@@ -3,6 +3,7 @@ package protocol.imps.client;
 import client.Threads.Translate;
 import client.Threads.ClientA;
 import client.obj.SerializeConnectTask;
+import client.obj.SerializeSource;
 import client.socketimp.PortManager;
 import client.socketimp.SocketManager;
 import protocol.Excute.IAction;
@@ -33,12 +34,14 @@ public class QueryConnectUdp_source implements IAction {
                 int port = PortManager.get().getPortToAdd();
                 SocketManager manager = intent.getSourceManager();
                 byte[] ip = manager.info.getLocalAddress().getAddress().getAddress();
+                SerializeSource source = connectTask.getSource();
                 InetSocketAddress localSocket = new InetSocketAddress(InetAddress.getByAddress(ip),port);
                 InetSocketAddress serverSocket = connectTask.getServerTempUDP();
-                Translate translate = new Translate();
+                Translate translate = new Translate(Translate.HOLDER_CLIENT_A);
                 translate.setMac(manager.info.getLocalMac());
                 translate.setLocalSokcet(localSocket);
                 translate.setServerSocket(serverSocket);
+                translate.setResource(source);
                 translate.checkServerIp(manager.info.getServerAddress());
                 new ClientA(translate);
             }

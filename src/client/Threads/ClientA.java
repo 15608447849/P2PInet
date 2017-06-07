@@ -13,7 +13,6 @@ import java.nio.ByteBuffer;
  * Created by user on 2017/6/6.
  */
 public class ClientA extends TranslateThread {
-    private static final String TAG = "客户端A #";
     public ClientA(Translate translate) {
         super(translate);
         start();
@@ -32,9 +31,9 @@ public class ClientA extends TranslateThread {
     }
 
     @Override
-    boolean onServerMessage(ByteBuffer byteBuffer) {
+    boolean onServerMessage(InetSocketAddress socketAddress,ByteBuffer byteBuffer) {
         try {
-            LOG.I(TAG+"收到信息: "+byteBuffer);
+            LOG.I(TAG+"收到信息: "+socketAddress+ " -> " + byteBuffer);
             byte resultCommand = byteBuffer.get(0);
             if (resultCommand == Command.Server.udpSourceDestNetAddress){
 
@@ -46,7 +45,7 @@ public class ClientA extends TranslateThread {
 
                 SerializeConnectTask connectTask = (SerializeConnectTask) Parse.bytes2Sobj(data);
                 if(connectTask.getCompele() == 3){
-                    tanslate.setTerminalSocket(connectTask.getDesNet());
+                    translate.setTerminalSocket(connectTask.getDesNet());
                     LOG.I(TAG+"收到客户端B的地址信息.");
                     return false;
                 }
@@ -60,26 +59,9 @@ public class ClientA extends TranslateThread {
     }
 
     @Override
-    void sendMessageToTerminal() throws Exception {
-        LOG.I(TAG+"终端信息: "+ tanslate.getTerminalSocket());
-        ByteBuffer buffer = tanslate.getBuffer();
-        while (true){
-            buffer.clear();
-            buffer.put(Command.Client.clientAshakePackage);
-            buffer.flip();
-            tanslate.sendMessageToTarget(buffer,tanslate.getTerminalSocket(),tanslate.getChannel());
-
-            buffer.clear();
-            InetSocketAddress terminal = (InetSocketAddress) tanslate.getChannel().receive(buffer);
-            if (terminal!=null && terminal.equals(tanslate.getTerminalSocket())){
-                buffer.flip();
-                LOG.I(TAG+"收到对端信息, "+ buffer.get(0));
-                break;
-            }
-            synchronized (this){
-                this.wait(1000 * 2);
-            }
-        }
+    protected void sendMessageToTerminal() throws Exception {
+        LOG.I(TAG+"终端信息: "+ translate.getTerminalSocket());
+        super.sendMessageToTerminal();
     }
 
     @Override

@@ -1,5 +1,7 @@
 package client.Threads;
 
+import client.obj.SerializeSource;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -10,7 +12,10 @@ import java.nio.channels.DatagramChannel;
  * 传输数据对象
  */
 public class Translate {
-
+    public static final int HOLDER_CLIENT_A = 0;
+    public static final int HOLDER_CLIENT_B = 1;
+    //
+    private int holderType;
     //物理地址
     private byte[] mac;
     //本地address
@@ -21,9 +26,21 @@ public class Translate {
     private InetSocketAddress terminalSocket;
     //通讯管道
     private DatagramChannel channel;
+    private SerializeSource resource;
     //数据
     private ByteBuffer buffer;
 
+
+    public Translate(int holderType) {
+        this.holderType = holderType;
+    }
+
+    public int getHolderType(){
+        return holderType;
+    }
+    public String getHolderTypeName(){
+        return holderType==HOLDER_CLIENT_A?"客户端A # ":holderType==HOLDER_CLIENT_B?"客户端B # ":"无";
+    }
 
     public byte[] getMac() {
         return mac;
@@ -71,6 +88,14 @@ public class Translate {
 
     public void setBuffer(ByteBuffer buffer) {
         this.buffer = buffer;
+    }
+
+    public SerializeSource getResource() {
+        return resource;
+    }
+
+    public void setResource(SerializeSource resource) {
+        this.resource = resource;
     }
 
     //向指定地址发送消息
