@@ -26,7 +26,7 @@ public abstract class TranslateThread extends Thread{
     protected void openChannel() throws Exception{
         DatagramChannel channel = DatagramChannel.open();
         channel.bind(tanslate.getLocalSokcet());
-//        channel.configureBlocking(false);
+        channel.configureBlocking(false);
         ByteBuffer buffer = ByteBuffer.allocate(Parse.buffSize);
         tanslate.setChannel(channel);
         tanslate.setBuffer(buffer);
@@ -46,7 +46,9 @@ public abstract class TranslateThread extends Thread{
                 byteBuffer.flip();
                 isSend = onServerMessage(byteBuffer);
             }
-
+            synchronized (this){
+                wait(1000 * 2);
+            }
         }
     }
     /**

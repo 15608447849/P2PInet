@@ -34,6 +34,7 @@ public class ClientA extends TranslateThread {
     @Override
     boolean onServerMessage(ByteBuffer byteBuffer) {
         try {
+            LOG.I(TAG+"收到信息: "+byteBuffer);
             byte resultCommand = byteBuffer.get(0);
             if (resultCommand == Command.Server.udpSourceDestNetAddress){
 
@@ -74,6 +75,9 @@ public class ClientA extends TranslateThread {
                 buffer.flip();
                 LOG.I(TAG+"收到对端信息, "+ buffer.get(0));
                 break;
+            }
+            synchronized (this){
+                this.wait(1000 * 2);
             }
         }
     }

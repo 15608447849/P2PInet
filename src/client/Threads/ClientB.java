@@ -57,7 +57,9 @@ public class ClientB extends TranslateThread {
                 LOG.I(TAG+"收到对端信息, "+ buffer.get(0));
                 break;
             }
-
+            synchronized (this){
+                this.wait(1000 * 2);
+            }
         }
     }
 

@@ -141,10 +141,9 @@ public class UDPTemporary extends Thread{
                 if (connectTask.getCompele()==1){
                     //记录net信息
                     if (NetUtil.macByte2String(mac).equals(clientA.getMac())){
-
                         connectTask.setSrcNET(address.getAddress().getAddress(),address.getPort());
                         connectTask.setComplete(2); //填充了源 net信息
-                        LOG.I("设置 源 net 信息,成功. "+connectTask.getCompele());
+                        LOG.I("收到客户端A的心跳,设置 客户端A UDP NET 信息,成功. task state:"+connectTask.getCompele()+", clientA: "+address);
                     }
                     if (connectTask.getCompele() == 2){
                         //回复源
@@ -163,10 +162,10 @@ public class UDPTemporary extends Thread{
                     if (NetUtil.macByte2String(mac).equals(clientB.getMac())){
                         connectTask.setDesNET(address.getAddress().getAddress(),address.getPort());
                         connectTask.setComplete(3);
-                        LOG.I("设置 目的地 net 信息,成功. "+connectTask.getCompele());
+                        LOG.I("收到客户端B心跳,设置 客户端B UDP NET 信息,成功. task state:"+connectTask.getCompele()+", clientB"+address);
                     }
                     if (connectTask.getCompele() == 3){
-                        //回复目的地-客户端B :
+                        //回复目的地-客户端B , -> B就尝试连接A了.
                         buffer.clear();
                         buffer.put(Command.Server.udpServerReceiveHeartbeatSuccess);
                         buffer.flip();
@@ -176,7 +175,7 @@ public class UDPTemporary extends Thread{
                 }
 
                 if (connectTask.getCompele() == 3){
-                    //通知客户端A ,b的信息
+                    //通知客户端A ,b的net信息
                     if (NetUtil.macByte2String(mac).equals(clientA.getMac())){
                         buffer.clear();
                         byte[] data = Parse.sobj2Bytes(connectTask);
@@ -186,7 +185,7 @@ public class UDPTemporary extends Thread{
                         buffer.put(lenBytes);
                         buffer.put(data);
                         buffer.flip();
-                        LOG.I("客户端A,UDP : "+ address + "   "   +buffer);
+                       LOG.I("通知客户端A,B的NET地址 "+ address);
                         //通知客户端A
                         channel.send(buffer,address);
                         closeTask();
