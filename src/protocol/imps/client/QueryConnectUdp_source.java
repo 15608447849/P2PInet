@@ -39,7 +39,7 @@ public class QueryConnectUdp_source implements IAction {
                     tanslate.setMac(manager.info.getLocalMac());
                     tanslate.setLocalSokcet(localSocket);
                     tanslate.setServerSocket(serverSocket);
-                new ClientA(manager.info.getLocalMac(),localSocket,serverSocket);
+                new ClientA(tanslate);
             }
         }catch (Exception e){
             e.printStackTrace();

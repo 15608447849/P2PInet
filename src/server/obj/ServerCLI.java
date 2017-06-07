@@ -53,7 +53,7 @@ public class ServerCLI implements CompletionHandler<Integer,ByteBuffer> {
         write = new CLIWrite(this);
         //发送共享目录资源上传命令
         readContent();
-//        LOG.I("接收到一个连接,创建客户端 - "+ this);
+        LOG.I("接收到一个连接,创建客户端 - "+ this);
     }
 
     private void setSocket(AsynchronousSocketChannel socket){

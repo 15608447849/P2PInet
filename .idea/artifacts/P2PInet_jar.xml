@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="P2PInet:jar">
+    <output-path>C:/FileServerDirs</output-path>
+    <root id="archive" name="P2PInet.jar">
+      <element id="module-output" name="P2PInet" />
+    </root>
+  </artifact>
+</component>

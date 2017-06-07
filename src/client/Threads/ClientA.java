@@ -44,7 +44,7 @@ public class ClientA extends TanslateThread {
                 byte[] data = new byte[len];
                 byteBuffer.position(5);
                 byteBuffer.get(data,0,len);
-                LOG.I(Arrays.toString(data));
+
                 SerializeConnectTask connectTask = (SerializeConnectTask) Parse.bytes2Sobj(data);
                 if(connectTask.getCompele() == 3){
                     tanslate.setTerminalSocket(connectTask.getDesNet());
@@ -62,7 +62,7 @@ public class ClientA extends TanslateThread {
 
     @Override
     void sendMessageToTerminal() throws Exception {
-            LOG.I(TAG+"终端信息: "+ tanslate.getTerminalSocket());
+        LOG.I(TAG+"终端信息: "+ tanslate.getTerminalSocket());
         ByteBuffer buffer = tanslate.getBuffer();
         while (true){
             buffer.clear();

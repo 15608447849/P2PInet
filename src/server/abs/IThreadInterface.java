@@ -1,7 +1,7 @@
 package server.abs;
 
 import client.obj.SerializeConnectTask;
-import server.obj.UDPTemporary;
+import server.imp.threads.UDPTemporary;
 
 /**
  * Created by user on 2017/6/6.

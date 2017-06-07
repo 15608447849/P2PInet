@@ -21,8 +21,8 @@ public class Main {
     public static void main(String[] args) {
 //            test();
 //            launchServer();
-//            launchClient();
-            startSource("/psb.jpg");
+            launchClient();
+//            startSource("/psb.jpg");
 
     }
 
@@ -61,9 +61,13 @@ public class Main {
              * 写进配置文件中,读取.
              */
             String homeDirs = "C:\\FileServerDirs\\temp";
+            File dir = new File(homeDirs);
+            if (!dir.exists()){
+                dir.mkdir();
+            }
             int port =  new Random().nextInt(10000)%(65535-10000+1) + 10000;
-            InetSocketAddress local = new InetSocketAddress("172.16.0.55",port);
-            InetSocketAddress server = new InetSocketAddress("172.16.0.200",9999);
+            InetSocketAddress local = new InetSocketAddress(NetUtil.getLocalIPInet(),port);
+            InetSocketAddress server = new InetSocketAddress("39.108.87.46",9999);
             Info info = new Info(local,server);
             SourceManager sourceManager = new SourceManager(homeDirs);
             new SocketManager(info,sourceManager).connectServer();
@@ -84,8 +88,8 @@ public class Main {
              */
             String homeDirs = "C:\\FileServerDirs\\source";
             int port =  new Random().nextInt(10000)%(65535-10000+1) + 10000;
-            InetSocketAddress local = new InetSocketAddress("172.16.0.200",port);
-            InetSocketAddress server = new InetSocketAddress("172.16.0.200",9999);
+            InetSocketAddress local = new InetSocketAddress(NetUtil.getLocalIPInet(),port);
+            InetSocketAddress server = new InetSocketAddress("39.108.87.46",9999);
             Info info = new Info(local,server);
             SourceManager sourceManager = new SourceManager(homeDirs);
            SocketManager manager = new SocketManager(info,sourceManager);
