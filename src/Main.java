@@ -22,7 +22,7 @@ public class Main {
 //            test();
 //            launchServer();
 //            launchClient();
-//            startSource("/psb.jpg");
+            startSource("/psb.jpg");
     }
 
 

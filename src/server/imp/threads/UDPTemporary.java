@@ -128,7 +128,7 @@ public class UDPTemporary extends Thread{
             buffer.clear();
             InetSocketAddress address = (InetSocketAddress) sc.receive(buffer);
             //协议类型,数据长度,信息序列化对象
-            LOG.E("UDP "+this+" 接受到数据:"+ address+" ----> "+buffer);
+//            LOG.E("UDP "+this+" 接受到数据:"+ address+" ----> "+buffer);
             buffer.flip();
             byte cmd = buffer.get(0);
 //             LOG.E("UDP "+this+" 接受到数据:"+ address+" ----> "+buffer+ " 命令:"+ cmd);
@@ -185,7 +185,7 @@ public class UDPTemporary extends Thread{
                         buffer.put(lenBytes);
                         buffer.put(data);
                         buffer.flip();
-                       LOG.I("通知客户端A,B的NET地址 "+ address);
+                        LOG.I("通知客户端A,B的NET地址, clientA: "+ address);
                         //通知客户端A
                         channel.send(buffer,address);
                         closeTask();
