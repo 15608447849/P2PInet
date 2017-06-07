@@ -80,7 +80,13 @@ public class Translate {
         }
     }
 
-
-
-
+    //检查Ip
+    public void checkServerIp(InetSocketAddress serverAddress) {
+        if (serverAddress!=null && getServerSocket()!=null){
+            if (!getServerSocket().getAddress().equals(serverAddress.getAddress())){
+                InetSocketAddress newServerAddress = new InetSocketAddress(serverAddress.getAddress(),getServerSocket().getPort());
+                setServerSocket(newServerAddress);
+            }
+        }
+    }
 }

@@ -2,6 +2,7 @@ package client.Threads;
 
 import protocol.Command;
 import protocol.Parse;
+import utils.LOG;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -11,11 +12,13 @@ import java.nio.channels.DatagramChannel;
 /**
  * Created by user on 2017/6/7.
  */
-public abstract class TanslateThread extends Thread{
+public abstract class TranslateThread extends Thread{
     protected Translate tanslate;
 
-    public TanslateThread(Translate tanslate) {
+    public TranslateThread(Translate tanslate) {
         this.tanslate = tanslate;
+        LOG.I("本机UDP地址>>"+tanslate.getLocalSokcet());
+        LOG.I("服务器UDP地址>>"+tanslate.getServerSocket());
     }
     /**
      * 打开管道
@@ -23,7 +26,7 @@ public abstract class TanslateThread extends Thread{
     protected void openChannel() throws Exception{
         DatagramChannel channel = DatagramChannel.open();
         channel.bind(tanslate.getLocalSokcet());
-        channel.configureBlocking(false);
+//        channel.configureBlocking(false);
         ByteBuffer buffer = ByteBuffer.allocate(Parse.buffSize);
         tanslate.setChannel(channel);
         tanslate.setBuffer(buffer);
@@ -43,6 +46,7 @@ public abstract class TanslateThread extends Thread{
                 byteBuffer.flip();
                 isSend = onServerMessage(byteBuffer);
             }
+
         }
     }
     /**

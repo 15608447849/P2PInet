@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by user on 2017/6/6.
  */
-public class ClientB extends TanslateThread{
+public class ClientB extends TranslateThread {
     private static final String TAG = "客户端B #";
 
     public ClientB(Translate translate) {

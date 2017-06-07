@@ -38,7 +38,7 @@ public class UDPTemporary extends Thread{
             this.connectTask = task;
             this.operate = operate;
             this.manager = manager;
-            LOG.I("创建 udp临时连接线程, 地址:"+socketAddress);
+            LOG.I("创建 udp临时连接线程, 临时地址:"+socketAddress);
             start();
     }
     //初始化
@@ -128,7 +128,7 @@ public class UDPTemporary extends Thread{
             buffer.clear();
             InetSocketAddress address = (InetSocketAddress) sc.receive(buffer);
             //协议类型,数据长度,信息序列化对象
-//            LOG.E("UDP "+this+" 接受到数据:"+ address+" ----> "+buffer);
+            LOG.E("UDP "+this+" 接受到数据:"+ address+" ----> "+buffer);
             buffer.flip();
             byte cmd = buffer.get(0);
 //             LOG.E("UDP "+this+" 接受到数据:"+ address+" ----> "+buffer+ " 命令:"+ cmd);

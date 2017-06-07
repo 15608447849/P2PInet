@@ -21,8 +21,8 @@ public class Main {
     public static void main(String[] args) {
 //            test();
 //            launchServer();
-            launchClient();
-//            startSource("/psb.jpg");
+//            launchClient();
+            startSource("/psb.jpg");
 
     }
 

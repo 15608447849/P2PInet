@@ -21,13 +21,11 @@ public class QueryConnectUdp_der implements IAction {
     @Override
     public void action(Intent intent) {
         try{
+            LOG.I("索求资源客户端(clientB) 收到服务器的UDP连接请求.");
             HashMap<String,Object> map = intent.getMap();
-
             byte[] sourceBytes =  (byte[]) map.get(Parse._connectTaskBytes);
             SerializeConnectTask connectTask = (SerializeConnectTask) Parse.bytes2Sobj(sourceBytes);
-            LOG.I("搜求资源客户端收到服务器的UDP连接请求:[ "+connectTask +" ]");
             if (connectTask.getCompele() == 2){
-
                 // 随机分配一个未使用的端口
                 int port = PortManager.get().getPortToAdd();
                 SocketManager manager = intent.getSourceManager();
@@ -36,13 +34,13 @@ public class QueryConnectUdp_der implements IAction {
                 InetSocketAddress serverSocket = connectTask.getServerTempUDP();
                 InetSocketAddress sourceSocket = connectTask.getSrcNET();
 
-                Translate tanslate = new Translate();
-                    tanslate.setMac(manager.info.getLocalMac());
-                    tanslate.setLocalSokcet(localSocket);
-                    tanslate.setServerSocket(serverSocket);
-                    tanslate.setTerminalSocket(sourceSocket);
-                new ClientB(tanslate);
-
+                Translate translate = new Translate();
+                translate.setMac(manager.info.getLocalMac());
+                translate.setLocalSokcet(localSocket);
+                translate.setServerSocket(serverSocket);
+                translate.setTerminalSocket(sourceSocket);
+                translate.checkServerIp(manager.info.getServerAddress());
+                new ClientB(translate);
             }
         }catch (Exception e){
             e.printStackTrace();

@@ -8,13 +8,11 @@ import utils.LOG;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
-import java.util.Arrays;
 
 /**
  * Created by user on 2017/6/6.
  */
-public class ClientA extends TanslateThread {
+public class ClientA extends TranslateThread {
     private static final String TAG = "客户端A #";
     public ClientA(Translate translate) {
         super(translate);
