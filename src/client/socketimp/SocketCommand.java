@@ -8,16 +8,33 @@ import utils.LOG;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.CompletionHandler;
 
 /**
  * Created by user on 2017/6/2.
  */
-public class SocketCommand {
+public class SocketCommand implements CompletionHandler<Integer,Void>{
     private SocketManager manager;
 
     public SocketCommand(SocketManager manager) {
         this.manager = manager;
     }
+
+    @Override
+    public void completed(Integer integer, Void aVoid) {
+
+    }
+
+    @Override
+    public void failed(Throwable throwable, Void aVoid) {
+            throwable.printStackTrace();
+            manager.reConnection();
+    }
+
+    /**
+     * 发送认证net类型请求
+     */
+
 
     /**
      * 发送心跳
@@ -38,7 +55,7 @@ public class SocketCommand {
             buffer.put(port);
             buffer.put(mac);
             buffer.flip();
-            manager.socket.write(buffer);
+           manager.socket.write(buffer,null,this);
         }
     }
 
@@ -58,7 +75,7 @@ public class SocketCommand {
             buffer.put(length);
             buffer.put(sourceArr);
             buffer.flip();
-            manager.socket.write(buffer);
+            manager.socket.write(buffer,null,this);
             LOG.I("通知服务器,终端同步资源: "+ source);
         }
     }
@@ -79,9 +96,17 @@ public class SocketCommand {
             buffer.put(length);
             buffer.put(sourceArr);
             buffer.flip();
-            manager.socket.write(buffer);
+            manager.socket.write(buffer,null,this);
         }
     }
 
-
+    //认证成功
+    public void sendAuthenticationSucceed() {
+        if (manager.isValid()){
+            ByteBuffer byteBuffer = ByteBuffer.allocate(1);
+            byteBuffer.put(Command.Client.authenticationSucceed);
+            byteBuffer.flip();
+            manager.socket.write(byteBuffer,null,this);
+        }
+    }
 }

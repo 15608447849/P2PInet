@@ -3,7 +3,6 @@ package server.obj;
 import client.obj.SerializeConnectTask;
 import protocol.Command;
 import protocol.Parse;
-import utils.LOG;
 import utils.NetUtil;
 
 import java.io.IOException;
@@ -13,9 +12,24 @@ import java.nio.ByteBuffer;
  * Created by user on 2017/6/2.
  */
 public class CLIWrite {
-    private ServerCLI client;
-    public CLIWrite(ServerCLI client) {
+    private CLI client;
+    public CLIWrite(CLI client) {
         this.client = client;
+    }
+
+    /**
+     * 通知认证NET类型
+     */
+    public void notifyAuthentication(byte[] udp1portBytes,byte[] udp2portBytes) {
+        if (client.isValid()){
+            ByteBuffer buff = ByteBuffer.allocate(1+4+4+4);
+            buff.put(Command.Server.authenticationNetType);//命令
+            buff.put(Parse.int2bytes(8));
+            buff.put(udp1portBytes);
+            buff.put(udp2portBytes);
+            buff.flip();
+            client.getSocket().write(buff);
+        }
     }
 
     /**
@@ -54,14 +68,14 @@ public class CLIWrite {
                 buff.put(lenBytes);//长度
                 buff.put(data);//资源信息序列化对象
                 buff.flip();
-                LOG.I(client+ " 发送 "+buff);
                 client.getSocket().write(buff);
                 return true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
         return false;
     }
+
+
 }

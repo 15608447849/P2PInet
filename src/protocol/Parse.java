@@ -20,12 +20,16 @@ public class Parse {
     public static final String _length = "length";
     public static final String _dataBlock = "dataBlock";
 
+    public static final String _udpPort1 = "udpPort1";
+    public static final String _udpPort2= "udpPort2";
+
     public static final String _ipBytes = "ipBytes";
     public static final String _portInt = "portInt";
     public static final String _macBytes = "macBytes";
 
     public static final String _localSourceBytes = "localSourceBytes";
     public static final String _connectTaskBytes = "connectTaskBytes";
+
 
 
 

@@ -1,12 +1,10 @@
-package server.imp;
+package server.imp.threads;
 
 import server.abs.IOperate;
 import server.abs.IServer;
-import server.obj.ServerCLI;
+import server.obj.CLI;
 import utils.LOG;
-import utils.NetUtil;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantLock;
@@ -28,7 +26,7 @@ public class P2POperate extends Thread implements IOperate {
      * 有效客户端实例队列
      *
      */
-    private final HashSet<ServerCLI> set = new HashSet<>();
+    private final HashSet<CLI> set = new HashSet<>();
 
     //监听超时时间
     private long time = 30 * 1000L;
@@ -66,8 +64,8 @@ public class P2POperate extends Thread implements IOperate {
             lock.lock();
             long curTime = System.currentTimeMillis();
             if (set.size()>0){
-                Iterator<ServerCLI> iterator = set.iterator();
-                ServerCLI client;
+                Iterator<CLI> iterator = set.iterator();
+                CLI client;
                 while (iterator.hasNext()){
                     client = iterator.next();
                     if((curTime - client.getUpdateTime()) > time){
@@ -92,12 +90,16 @@ public class P2POperate extends Thread implements IOperate {
         return server;
     }
 
+    //查看是否认证,是否已存在,如果不存在,添加到队列.
     @Override
-    public void putCLI(ServerCLI client) {
+    public void putCLI(CLI client) {
         try{
             lock.lock();
-            client.updateTime();
-            set.add(client);
+            if (client.isValid() && client.isAuthentication() && !client.isExist()){
+                boolean flag = set.add(client);
+                LOG.I("添加客户端 : "+client+"  >> "+flag);
+                client.setExist(flag);
+            }
             //LOG.I("添加:"+client+" ,当前队列大小:"+set.size());
         }finally {
             lock.unlock();
@@ -110,7 +112,7 @@ public class P2POperate extends Thread implements IOperate {
             lock.lock();
 //            LOG.I("同步资源,终端数量 :"+ set.size() +" \n "+ set);
             if (set.size()==0) return;
-            Iterator<ServerCLI> iterator = set.iterator();
+            Iterator<CLI> iterator = set.iterator();
             while (iterator.hasNext()){
                 //发送消息 - 同步资源
                 iterator.next().getWrite().synchronizationSourceIssued(macBytes,sourceName);
@@ -121,11 +123,11 @@ public class P2POperate extends Thread implements IOperate {
     }
 
     @Override
-    public ServerCLI getClientByMac(String mac) {
+    public CLI getClientByMac(String mac) {
         try{
             lock.lock();
-            final Iterator<ServerCLI> iterator = set.iterator();
-            ServerCLI client;
+            final Iterator<CLI> iterator = set.iterator();
+            CLI client;
             while (iterator.hasNext()){
                 client = iterator.next();
                 if (client.getMac().equals(mac)){

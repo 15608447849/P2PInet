@@ -5,7 +5,7 @@ import protocol.Command;
 import protocol.Parse;
 import server.abs.IOperate;
 import server.abs.IThreadInterface;
-import server.obj.ServerCLI;
+import server.obj.CLI;
 import utils.LOG;
 import utils.NetUtil;
 
@@ -28,8 +28,8 @@ public class UDPTemporary extends Thread{
     private InetSocketAddress socketAddress;
     private Selector selector = null;
     private DatagramChannel channel;
-    private ServerCLI clientA;
-    private ServerCLI clientB;
+    private CLI clientA;
+    private CLI clientB;
     private IThreadInterface manager;
     private ByteBuffer buffer;
     private IOperate operate;
@@ -88,9 +88,8 @@ public class UDPTemporary extends Thread{
         //创建连接
         try {
             selector = Selector.open();
-            channel = DatagramChannel.open();
+            channel = DatagramChannel.open().bind(socketAddress);;
             channel.configureBlocking(false);
-            channel.socket().bind(socketAddress);
             channel.register(selector, SelectionKey.OP_READ);
             LOG.I(this+"打开 UDP 监听.");
         } catch (IOException e) {

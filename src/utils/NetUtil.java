@@ -57,7 +57,7 @@ public class NetUtil {
     }
 
     public static String macByte2String(byte[] mac){
-        if (mac==null || mac.length==0) return null;
+        if (mac==null || mac.length==0) return "00-00-00-00-00-00";
         //下面代码是把mac地址拼装成String
         StringBuffer sb = new StringBuffer();
         for(int i=0;i<mac.length;i++){

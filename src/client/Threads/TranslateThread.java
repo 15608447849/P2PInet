@@ -72,7 +72,6 @@ public abstract class TranslateThread extends Thread{
         if (!(type == HOLDER_CLIENT_A || type == HOLDER_CLIENT_B)) return;
         byte shakePackage = type == HOLDER_CLIENT_A?Command.Client.clientAshakePackage:Command.Client.clienBshakePackage;
         int i = 0;
-        int max = 65535;
         InetAddress inetAddress = translate.getTerminalSocket().getAddress();
         while (true){
             buffer.clear();
@@ -87,10 +86,12 @@ public abstract class TranslateThread extends Thread{
                 LOG.I(TAG+"收到对端信息, " +terminal +"  -> "+ buffer.get(0));
                 break;
             }
-//            synchronized (this){
-//                wait(100);
-//            }
+            synchronized (this){
+                wait(1000);
+            }
             i++;
+            LOG.I(TAG+ i);
+            if (i>=65536) break;
         }
     }
 

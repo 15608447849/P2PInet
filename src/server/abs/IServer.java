@@ -1,6 +1,6 @@
 package server.abs;
 
-import java.net.URLConnection;
+import server.obj.IParameter;
 
 /**
  * Created by user on 2017/5/27.

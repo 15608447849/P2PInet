@@ -7,7 +7,7 @@ public abstract class IThread extends Thread  {
     /**
      * 是否运行
      */
-    private volatile boolean isRun;
+    protected volatile boolean isRun;
     /**
      * 服务器
      */

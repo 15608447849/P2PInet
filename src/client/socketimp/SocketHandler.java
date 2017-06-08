@@ -29,8 +29,7 @@ public class SocketHandler extends Thread implements CompletionHandler<Integer, 
     public void completed(Integer i, ByteBuffer byteBuffer) {
 //           LOG.I("读取到内容 ,长度:"+i+" , "+byteBuffer);
        if (i==-1){
-           manager.closeConnect();
-           manager.connectServer();
+           manager.reConnection();
        }else{
            HashMap<String,Object> map = Parse.message(byteBuffer);
            //读取
@@ -52,7 +51,8 @@ public class SocketHandler extends Thread implements CompletionHandler<Integer, 
 
     @Override
     public void failed(Throwable throwable, ByteBuffer asynchronousSocketChannel) {
-
+         throwable.printStackTrace();
+            manager.reConnection();
     }
 
 

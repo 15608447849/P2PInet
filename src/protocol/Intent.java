@@ -1,10 +1,11 @@
 package protocol;
 
 import client.socketimp.SocketManager;
-import client.sourceimp.SourceManager;
 import server.abs.IOperate;
-import server.obj.ServerCLI;
+import server.obj.CLI;
+import server.obj.IParameter;
 
+import java.nio.channels.AsynchronousSocketChannel;
 import java.util.HashMap;
 
 /**
@@ -15,7 +16,23 @@ public class Intent {
     private byte command;
     private HashMap<String,Object> map;
     private IOperate operate;
-    private ServerCLI serverCli;
+    private IParameter param;
+    private CLI serverCli;
+    public Intent(){}
+    public Intent(IOperate operate) {
+        putOperate(operate);
+    }
+    public Intent(IOperate operate, IParameter param) {
+        putOperate(operate);
+        putIparam(param);
+    }
+    public void putIparam(IParameter param){
+        this.param = param;
+    }
+    public IParameter getIparam(){
+        return param;
+    }
+
     public void putMap(HashMap<String,Object> map) {
         this.map = map;
     }
@@ -24,7 +41,7 @@ public class Intent {
         this.operate = operate;
     }
 
-    public void putServerCLI(ServerCLI serverCli) {
+    public void putCLI(CLI serverCli) {
         this.serverCli= serverCli;
     }
 
@@ -32,7 +49,7 @@ public class Intent {
         return map;
     }
 
-    public ServerCLI getServerCLI() {
+    public CLI getServerCLI() {
         return serverCli;
     }
 
@@ -66,4 +83,6 @@ public class Intent {
     public void putSocketManager(SocketManager socketManager) {
         this.socketManager = socketManager;
     }
+
+
 }

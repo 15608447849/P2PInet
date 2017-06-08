@@ -23,7 +23,7 @@ public class SourceManager {
         this.fonder = new FindFileVisitor(homeDirs);
     }
 
-    public boolean ergodicSoure(SerializeSource source){
+    public boolean ergodicResource(SerializeSource source){
         try{
             lock.lock();
             if (source==null) new NullPointerException("source is not exist.");

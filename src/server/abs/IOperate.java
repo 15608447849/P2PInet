@@ -1,7 +1,6 @@
 package server.abs;
 
-import client.obj.SerializeConnectTask;
-import server.obj.ServerCLI;
+import server.obj.CLI;
 
 /**
  * Created by user on 2017/5/27.
@@ -9,7 +8,7 @@ import server.obj.ServerCLI;
 public interface IOperate {
     void setServer(IServer server);
     IServer getServer();
-    void putCLI(ServerCLI client);
+    void putCLI(CLI client);
     void turnSynchronizationSource(byte[] macBytes, byte[] sourceName);
-    ServerCLI getClientByMac(String mac);
+    CLI getClientByMac(String mac);
 }

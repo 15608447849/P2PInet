@@ -3,9 +3,9 @@ import client.obj.SerializeSource;
 import client.socketimp.SocketManager;
 import client.sourceimp.SourceManager;
 import protocol.Parse;
-import server.imp.P2POperate;
-import server.imp.P2PServer;
-import server.obj.ServerInfo;
+import server.obj.IParameter;
+import server.imp.threads.P2POperate;
+import server.imp.servers.P2PServer;
 import utils.LOG;
 import utils.NetUtil;
 
@@ -33,17 +33,13 @@ public class Main {
      */
     private static void launchServer(){
         try {
-        InetAddress address =  NetUtil.getLocalIPInet();
-        int port = 9999;
         //启动服务器
-        ServerInfo info = new ServerInfo();
-        info.setLocalAddress_1(new InetSocketAddress(address,port));
-        info.setLocalMac(NetUtil.getMACAddress(address));
+        IParameter info = new IParameter(NetUtil.getLocalIPInet(),9999,8888,7777);
         P2POperate operate = new P2POperate(5);
         P2PServer server = new P2PServer(10);
         server.initServer(info);
         server.connectServer(operate);//连接操作
-        server.createUdpManager(7000,8000);
+        server.createUdpManager(5000,6000);
         server.startServer();
         }catch (IOException e) {
             e.printStackTrace();
@@ -66,6 +62,7 @@ public class Main {
             }
             int port =  new Random().nextInt(10000)%(65535-10000+1) + 10000;
             InetSocketAddress local = new InetSocketAddress(NetUtil.getLocalIPInet(),port);
+//            InetSocketAddress server = new InetSocketAddress("172.16.0.198",9999);
             InetSocketAddress server = new InetSocketAddress("39.108.87.46",9999);
             Info info = new Info(local,server);
             SourceManager sourceManager = new SourceManager(homeDirs);

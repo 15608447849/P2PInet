@@ -1,11 +1,14 @@
 package server.imp.threads;
 
+import protocol.Intent;
 import server.abs.IOperate;
 import server.abs.IServer;
 import server.abs.IThread;
-import server.obj.ServerCLI;
+import server.obj.CLI;
+import server.obj.IParameter;
 import utils.LOG;
 
+import java.io.IOException;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
@@ -16,10 +19,15 @@ import java.nio.channels.CompletionHandler;
 public class AcceptClient extends IThread implements CompletionHandler<AsynchronousSocketChannel, Void>{
 
     private AsynchronousServerSocketChannel listener;
+    private IOperate operate;
+    private IParameter parameter;
     public AcceptClient(IServer server) {
         super(server);
+        this.operate = (IOperate)server.getParam("operate");
+        this.parameter = (IParameter)server.getParam("param");
         this.listener = (AsynchronousServerSocketChannel) server.getParam("listener");
-        LOG.I("打开接受客户端线程 :"+this);
+        launch();
+        LOG.I("等待客户端接入服务 ,启动.");
     }
 
     @Override
@@ -32,7 +40,11 @@ public class AcceptClient extends IThread implements CompletionHandler<Asynchron
     public void completed(AsynchronousSocketChannel asynchronousSocketChannel, Void aVoid) {
         action();//接受下一个服务
         //处理当前连接
-        new ServerCLI(asynchronousSocketChannel,(IOperate)server.getParam("operate"));
+        try {
+            new CLI(asynchronousSocketChannel,new Intent(operate,parameter));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

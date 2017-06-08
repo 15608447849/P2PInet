@@ -1,0 +1,125 @@
+package server.imp.threads;
+
+import protocol.Command;
+import protocol.Parse;
+import server.abs.IServer;
+import server.abs.IThread;
+import server.obj.IParameter;
+import utils.LOG;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.util.Iterator;
+
+/**
+ * Created by user on 2017/6/8.
+ * 打开两个Udp连接
+ * 帮助客户端 认证 net类型
+ */
+public class NetAuthenticationHelper extends IThread {
+    private Selector selector;
+    private DatagramChannel channel_1;
+    private DatagramChannel channel_2;
+    private ByteBuffer byteBuffer;
+
+    public NetAuthenticationHelper(IServer server) {
+        super(server);
+        IParameter parameter = (IParameter) server.getParam("param");
+        try {
+            init(parameter.udpLocalAddress1,parameter.udpLocalAddress2);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private  void init(InetSocketAddress address1,InetSocketAddress address2) throws IOException {
+        this.selector = Selector.open();
+        this.channel_1 = DatagramChannel.open().bind(address1);
+        this.channel_2 = DatagramChannel.open().bind(address2);
+
+        this.channel_1.configureBlocking(false);
+        this.channel_2.configureBlocking(false);
+
+        this.channel_1.register(selector, SelectionKey.OP_READ);
+        this.channel_2.register(selector, SelectionKey.OP_READ);
+        //最大数据 : 标识符+IP+PORT = 1+4+4 = 9;
+        this.byteBuffer = ByteBuffer.allocate(9);
+        launch();
+        LOG.I("UDP NET 认证服务 ,启动.");
+    }
+
+    @Override
+    protected void action() {
+        while (isRun){
+            //开始读取
+            try {
+
+                if (selector.select() > 0){
+                    Iterator iterator = selector.selectedKeys().iterator();
+                    while (iterator.hasNext()) {
+                        SelectionKey key;
+                        key = (SelectionKey) iterator.next();
+                        iterator.remove();
+                        if (key.isReadable()) {
+                            handlerMessage(key);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 第一步：检测客户端是否有能力进行UDP通信以及客户端是否位于NAT后？
+     * 客户端建立UDP socket然后用这个socket向服务器的(IP-1,Port-1)发送数据包, 要求服务器返回客户端的IP和Port. ( c -> 65 , s -> 66,ip,port)
+     *
+     * 第二步：检测客户端NAT是否是Full Cone NAT？
+     * 客户端要求服务器用其他端口发送数据给客户端.无法接受到服务器的回应,说明客户端的NAT不是一个Full Cone NAT,继续检测.
+     *
+     * 第三步：检测客户端NAT是否是Symmetric NAT？
+     * 客户端向第二个端口发送udp数据包,返回客户端 natip natport .  如果和第一个端口返回的nat信息不同.则 说明时 symm nat.无法进行UDP穿越, 需要用服务器中转数据.
+     *
+     * 第四步：检测客户端NAT是否是Restricted Cone NAT还是Port Restricted Cone NAT？
+     * 客户端建立UDP socket然后用这个socket向服务器的(IP-1,Port-1)发送数据包要求服务器用IP-1和一个不同于Port-1的端口发送一个UDP 数据包响应客户端, 客户端发送请求后立即开始接受数据包，
+     * 无法接受到服务器的回应，则说明客户端是一个Port Restricted Cone NAT，如果能够收到服务器的响应则说明客户端是一个Restricted Cone NAT。以上两种NAT都可以进行UDP-P2P通信。
+     *
+     */
+    //处理
+    private void handlerMessage(SelectionKey key) {
+        try {
+            DatagramChannel sc = (DatagramChannel) key.channel();
+            byteBuffer.clear();
+            InetSocketAddress socketAddress = (InetSocketAddress) sc.receive(byteBuffer);
+            byteBuffer.flip();
+            byte tag = byteBuffer.get(0);
+            if (tag == Command.UDPAuthentication.client_query_nat_address){
+
+                byte[] ipBytes = socketAddress.getAddress().getAddress();
+                byte[] portBytes = Parse.int2bytes(socketAddress.getPort());
+                byteBuffer.clear();
+                byteBuffer.put(Command.UDPAuthentication.send_client_nat_address);
+                byteBuffer.put(ipBytes);
+                byteBuffer.put(portBytes);
+                byteBuffer.flip();
+                sc.send(byteBuffer,socketAddress);
+            }
+
+            if (tag == Command.UDPAuthentication.check_full_nat){
+                //使用另外一个端口发送消息
+                byteBuffer.clear();
+                byteBuffer.put(Command.UDPAuthentication.check_full_nat_resp);
+                byteBuffer.flip();
+                channel_2.send(byteBuffer,socketAddress);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}

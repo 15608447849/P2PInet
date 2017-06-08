@@ -2,6 +2,7 @@ package server.imp.threads;
 
 import client.obj.SerializeConnectTask;
 import server.abs.*;
+import server.obj.IParameter;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -27,7 +28,8 @@ public class UDPConnect extends IThread implements IThreadInterface {
     private IOperate operate;
     private byte[] ipBytes;
     //UDP端口范围
-    private int startUdpPort = 1000,endUdpPort = 65535,tcpPort;
+    private int startUdpPort = 1000,endUdpPort = 65535;
+    private int[] serverPorts;
 
     private volatile boolean isLoop;
     public UDPConnect(IServer server) {
@@ -35,7 +37,7 @@ public class UDPConnect extends IThread implements IThreadInterface {
         isLoop = true;
         operate = (IOperate) server.getParam("operate");
         IParameter param = (IParameter)server.getParam("param");
-        tcpPort = param.getPort();
+        serverPorts = param.getPorts();
         ipBytes = param.getIpBytes();
         launch();//启动自己
     }
@@ -80,7 +82,12 @@ public class UDPConnect extends IThread implements IThreadInterface {
     //分配端口
     private int assignPort() {
         int randomPort = startUdpPort + (int)(Math.random() * ((endUdpPort - startUdpPort) + 1));
-        if (randomPort == tcpPort) randomPort = assignPort();
+        for (Integer port : serverPorts) {
+            if (randomPort == port) {
+                randomPort = assignPort();
+                break;
+            }
+        }
         return useUDPConnect.containsKey(randomPort)?assignPort():randomPort;
     }
 

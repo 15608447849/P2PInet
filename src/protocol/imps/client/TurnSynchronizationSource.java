@@ -25,7 +25,7 @@ public class TurnSynchronizationSource implements Excute.IAction{
             LOG.I("收到同步请求:[ "+source +" ]");
 
             SocketManager manager = intent.getSourceManager();
-            boolean flag = manager.sourceManager.ergodicSoure(source);
+            boolean flag = manager.sourceManager.ergodicResource(source);
             if (flag) return;
             //不存在,请求服务器 同步资源
             //创建连接对象

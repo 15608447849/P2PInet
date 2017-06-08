@@ -1,5 +1,4 @@
 package server.obj;
-import protocol.Command;
 import protocol.Excute;
 import protocol.Intent;
 import protocol.Parse;
@@ -18,7 +17,7 @@ import java.util.HashMap;
  * Created by user on 2017/6/1.
  * 客户端在服务器上的实体,负责接受数据
  */
-public class ServerCLI implements CompletionHandler<Integer,ByteBuffer> {
+public class CLI extends Thread implements CompletionHandler<Integer,ByteBuffer> {
 
     //管道
     private AsynchronousSocketChannel socket;
@@ -28,42 +27,39 @@ public class ServerCLI implements CompletionHandler<Integer,ByteBuffer> {
     private IOperate operate;
     //网络地址
     private InetSocketAddress netSocket;
-    //本机地址
-    private InetSocketAddress localSocket;
     //本机物理地址
     private byte[] localMac;
+    //写
     private CLIWrite write;
+    private boolean isExist;
+    private int authentication;
     /**
      *  服务器用于判断此客户端是否存活的标识->
      *  在30秒之后还未更新,断开连接,删除客户端
      */
     private long time;
-
+    //传输
+    private Intent intent;
     /**
      *
-     * @param socket 这个客户端的socket
-     * @param operate
      */
-    public ServerCLI(AsynchronousSocketChannel socket, IOperate operate) {
-
-        setSocket(socket);
-        byteBuffer = ByteBuffer.allocate(Parse.buffSize);
+    public CLI(AsynchronousSocketChannel channel,Intent intent) throws IOException {
+        this.setSocket(channel);
+        this.intent = intent;
+        this.intent.putCLI(this);
+        this.byteBuffer = ByteBuffer.allocate(Parse.buffSize);
         this.operate = operate;
-        operate.putCLI(this);
-        write = new CLIWrite(this);
-        //发送共享目录资源上传命令
-        readContent();
-        LOG.I("接收到一个连接,创建客户端 - "+ this);
+        this.write = new CLIWrite(this);
+        //开始读取内容
+        this.readContent();
+        //如果30秒后,检测到非法,删除连接.
+       this.start();
     }
 
-    private void setSocket(AsynchronousSocketChannel socket){
+    private void setSocket(AsynchronousSocketChannel socket) throws IOException {
         if (socket==null) throw new NullPointerException("AsynchronousSocketChannel is null.");
         this.socket = socket;
-        try {
-            this.netSocket = (InetSocketAddress) socket.getRemoteAddress();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.netSocket = (InetSocketAddress) socket.getRemoteAddress();
     }
 
 
@@ -80,11 +76,8 @@ public class ServerCLI implements CompletionHandler<Integer,ByteBuffer> {
         try {
             if (isValid()){
                 socket.shutdownInput();
-//                LOG.E("关闭读取.");
                 socket.shutdownOutput();
-//                LOG.E("关闭写入.");
                 socket.close();
-//                LOG.E("关闭通道.");
                 return true;
             }
         } catch (IOException e) {
@@ -93,18 +86,18 @@ public class ServerCLI implements CompletionHandler<Integer,ByteBuffer> {
             byteBuffer = null;
             time = 0;
             socket=null;
+            operate = null;
+            write = null;
+            LOG.E(this + " 关闭.");
         }
-
         return false;
     }
 
     /**
-     * 设置主机本机信息
-     * @param localSocket
+     * 设置主机物理标识
      * @param macBytes
      */
-    public void setLocal(InetSocketAddress localSocket, byte[] macBytes) {
-        this.localSocket = localSocket;
+    public void setMacAddress(byte[] macBytes) {
         this.localMac = macBytes;
     }
     /**
@@ -114,27 +107,31 @@ public class ServerCLI implements CompletionHandler<Integer,ByteBuffer> {
      */
     @Override
     public boolean equals(Object o) {
-        if (o!=null && o instanceof ServerCLI){
-            ServerCLI serverCLI = (ServerCLI) o;
-            return serverCLI.netSocket.equals(this.netSocket);
+        if (o!=null && o instanceof CLI){
+            CLI serverCLI = (CLI) o;
+            if (this.getMac().equals(serverCLI.getMac())){
+                //如果物理地址相同
+               return serverCLI.netSocket.equals(this.netSocket); //比较网络地址
+            }
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return netSocket.hashCode();
+        String host = getMac()+netSocket;
+        return host.hashCode();
     }
 
     @Override
     public String toString() {
         StringBuffer stringBuffer = new StringBuffer();
         stringBuffer.append("[");
-        stringBuffer.append("物理地址: "+ NetUtil.macByte2String(localMac));
+        stringBuffer.append("物理地址: "+ getMac());
         stringBuffer.append(", 网络地址: "+ netSocket);
-        stringBuffer.append(", 主机地址: "+ localSocket);
         stringBuffer.append(", 连接有效: "+ isValid());
         stringBuffer.append(", 更新时间:"+ getUpdateTimeString());
+        stringBuffer.append(", HashCode:"+ hashCode());
         stringBuffer.append("]");
         return stringBuffer.toString();
     }
@@ -144,7 +141,6 @@ public class ServerCLI implements CompletionHandler<Integer,ByteBuffer> {
      */
     public void updateTime() {
         time = System.currentTimeMillis();
-
     }
 
     /**
@@ -194,23 +190,56 @@ public class ServerCLI implements CompletionHandler<Integer,ByteBuffer> {
         return socket;
     }
 
+    /**
+     * 是否认证
+     * @return
+     */
+    public boolean isAuthentication() {
+        return authentication==2;
+    }
+    /**
+     * 是否发送认证消息
+     */
+    public boolean isSendAuthentication(){
+        return authentication==1;
+    }
+    /**
+     * 设置认证结果
+     * 0 没有
+     * 1 进行中
+     * 2 完成
+     */
+    public void setAuthentication(int i){
+        this.authentication = i;
+    }
+    /**
+     * 是否存在客户端队列
+     * @return
+     */
+    public boolean isExist() {
+        return isExist;
+    }
 
+    public void setExist(boolean isExist){
+        this.isExist = isExist;
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * 连接合法性检测.
+     */
+    @Override
+    public void run() {
+        synchronized (this){
+            try {
+                this.wait(30 * 1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (!isAuthentication()){
+                close();//关闭连接.
+            }
+        }
+    }
 
     /**
      * 读取到数据OS回调
@@ -243,7 +272,7 @@ public class ServerCLI implements CompletionHandler<Integer,ByteBuffer> {
         return Excute.handlerMessage(Excute.SERVER,new Object[]{map,this});
     }
 
-    public IOperate getOperate() {
-        return operate;
+    public Intent getIntent() {
+        return intent;
     }
 }

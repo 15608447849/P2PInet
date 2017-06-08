@@ -16,6 +16,10 @@ public class ParseOpers {
         if (protocol == Command.Client.heartbeat) {//心跳
             ParseOpers.hearbeat(map,data);
         }
+        if (protocol == Command.Server.authenticationNetType){
+            //认证
+            ParseOpers.authentication(map,data);
+        }
         //同步资源
         if (protocol == Command.Client.synchronizationSource){
             synchronizedSource(map,data);
@@ -37,6 +41,17 @@ public class ParseOpers {
             queryConnectUdp_der(map,data);
         }
     }
+    //认证
+    private static void authentication(HashMap<String, Object> map, byte[] data) {
+        //分解数据
+        byte[] port1 = new byte[4];
+        System.arraycopy(data, 0, port1, 0, 4);
+        byte[] port2 = new byte[4];
+        System.arraycopy(data, 4, port2, 0, 4);
+        map.put(_udpPort1,port1);
+        map.put(_udpPort2,port2);
+    }
+
     /**
      * 索求资源客户端收到服务器的连接请求
      */

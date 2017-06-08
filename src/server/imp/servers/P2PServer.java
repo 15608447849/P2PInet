@@ -1,17 +1,16 @@
-package server.imp;
+package server.imp.servers;
 
 import server.abs.*;
 import server.imp.threads.AcceptClient;
+import server.imp.threads.NetAuthenticationHelper;
 import server.imp.threads.UDPConnect;
-import server.obj.ServerInfo;
+import server.obj.IParameter;
 import utils.LOG;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.util.HashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -19,38 +18,42 @@ import java.util.concurrent.Executors;
  */
 public class P2PServer implements IServer {
     //初始化参数
-    public ServerInfo param;
+    private IParameter param;
     //异步连接socket
-    public final AsynchronousServerSocketChannel listener;
-    //是否绑定
-    public boolean isBind;
+    private final AsynchronousServerSocketChannel listener;
     //管理得线程
-    public final HashMap<String,IThread> threadMap = new HashMap<>();
+    private final HashMap<String,IThread> threadMap = new HashMap<>();
     /**
      * 操作手
      */
-    public IOperate operate;
+    private IOperate operate;
 
     /**
      * UDP管理
      */
     private IThreadInterface udpManage;
-    public P2PServer(int threadNunber) throws IOException {
-        listener = AsynchronousServerSocketChannel.open(AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(threadNunber)));
+    public P2PServer(int threadNumber) throws IOException {
+        listener = AsynchronousServerSocketChannel.open(AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(threadNumber)));
     }
 
 
     @Override
     public void initServer(IParameter parameter) {
-        this.param = (ServerInfo) parameter;
+        this.param =  parameter;
         try {
-            listener.bind(this.param.localAddress_1);
-            isBind = true;
-            LOG.I("服务器绑定 -> "+this.param.localAddress_1 + ", "+param.getMac());
+            //打开UDP认证服务
+
+
+            listener.bind(this.param.tcpLocalAddress);
+            LOG.I("服务器TCP 绑定 -> "+this.param.tcpLocalAddress);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
+
 
     @Override
     public void connectServer(IOperate operate) {
@@ -67,10 +70,8 @@ public class P2PServer implements IServer {
     @Override
     public void startServer() {
         //创建接受线程
-        IThread accept = new AcceptClient(this);
-        accept.launch();
-        threadMap.put("AcceptClient",accept);
-        LOG.I("服务器启动");
+        threadMap.put("AcceptClient", new AcceptClient(this));
+        threadMap.put("AuthenticationClient", new NetAuthenticationHelper(this));
         synchronized (this){
             try {
                 wait();

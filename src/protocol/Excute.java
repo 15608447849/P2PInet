@@ -1,10 +1,9 @@
 package protocol;
 
-import client.obj.SerializeSource;
 import client.socketimp.SocketManager;
-import server.abs.IOperate;
-import server.obj.ServerCLI;
+import server.obj.CLI;
 import utils.ClazzUtil;
+import utils.LOG;
 
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -25,8 +24,8 @@ public class Excute {
     public boolean obtain(Intent intent){
         try{
             lock.lock();
-//            LOG.I("协议编号:"+ key +" \n" + map );
             byte key = intent.getCommand();
+//            LOG.I("协议编号:"+ key +" \n" + map );
             if (map.containsKey(key)){
                 //反射构建对象并且调用方法 ,成功返回true
                 String  clazzName = map.get(key);
@@ -45,6 +44,8 @@ public class Excute {
     static class Client extends Excute{
         private static final String suffix = "client.";
         private Client(){
+            //认证net类型
+            map.put(Command.Server.authenticationNetType,clsPrefix+suffix+"AuthenticationNet");
             //服务器下发同步资源
             map.put(Command.Server.trunSynchronizationSource,clsPrefix+suffix+"TurnSynchronizationSource");//服务器下发资源
             //资源客户端收到 服务器的UDP连接请求
@@ -67,6 +68,7 @@ public class Excute {
      static class Server extends Excute{
          private static final String suffix = "server.";
         private Server(){
+            map.put(Command.Client.authenticationSucceed,clsPrefix+suffix+"AuthenticationSucceed");//tcp心跳
             map.put(Command.Client.heartbeat,clsPrefix+suffix+"Heartbeat");//tcp心跳
             map.put(Command.Client.synchronizationSource,clsPrefix+suffix+"SynchronizationSource");//资源同步
             map.put(Command.Client.connectSourceClient,clsPrefix+suffix+"ConnectSourceClient");//请求建立连接
@@ -123,12 +125,10 @@ public class Excute {
 
         HashMap<String, Object> map = (HashMap<String, Object>) objects[0];
         byte command = (byte) map.get(Parse._protocol);//命令
-        ServerCLI client = (ServerCLI) objects[1];
-        Intent intent = new Intent();
+        CLI client = (CLI) objects[1];
+        Intent intent = client.getIntent();
             intent.putCommand(command);
             intent.putMap(map);
-            intent.putServerCLI(client);
-            intent.putOperate(client.getOperate());
         return Excute.Server.get().obtain(intent);
     }
 

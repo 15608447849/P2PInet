@@ -44,13 +44,22 @@ public class Command {
          * 客户端B->A
          */
         public static final byte clienBshakePackage = 32;
-
+        /**
+         * 认证
+         */
+        public static final byte authenticationSucceed = 10;
     }
 
     /**
      * 服务端发送 101-200
      */
     public static class Server{
+        /**
+         * 通知认证NET类型
+         */
+        public static final byte authenticationNetType = 100;
+
+
         /**
          * 转发资源同步请求
          *  {命令101,长度,资源需求主机MAC,资源名} -> 除这个mac之外的所有客户端
@@ -72,6 +81,15 @@ public class Command {
          * 发送给 源客户端 ,目标客户端NET信息
          */
         public static final byte udpSourceDestNetAddress = 111;
+    }
+
+
+    public static class UDPAuthentication{
+        public static final byte client_query_nat_address = 65;
+        public static final byte send_client_nat_address = 66;
+        //检测类型 fullnet
+        public static final byte check_full_nat = 68;
+        public static final byte check_full_nat_resp = 69;
     }
 
 }
