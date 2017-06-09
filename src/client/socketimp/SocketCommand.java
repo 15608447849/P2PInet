@@ -32,28 +32,27 @@ public class SocketCommand implements CompletionHandler<Integer,Void>{
     }
 
     /**
-     * 发送认证net类型请求
-     */
-
-
-    /**
      * 发送心跳
-     *  1 + 数据长度 + 数据块
+     *  1
+     *
+     *
+     *   byte[] ip = manager.info.getLocalAddress().getAddress().getAddress();
+     byte[] port =   Parse.int2bytes (manager.info.getLocalAddress().getPort());
+     byte[] mac = manager.info.getLocalMac();
+     byte[] length = Parse.int2bytes(ip.length+port.length+mac.length);
+     ByteBuffer buffer = ByteBuffer.allocate(1+length.length+ip.length+port.length+mac.length);
+     buffer.clear();
+
+     buffer.put(length);
+     buffer.put(ip);
+     buffer.put(port);
+     buffer.put(mac);
      */
     //发送心跳
     public void sendHeartbeat() throws IOException {
         if (manager.isValid()){
-            byte[] ip = manager.info.getLocalAddress().getAddress().getAddress();
-            byte[] port =   Parse.int2bytes (manager.info.getLocalAddress().getPort());
-            byte[] mac = manager.info.getLocalMac();
-            byte[] length = Parse.int2bytes(ip.length+port.length+mac.length);
-            ByteBuffer buffer = ByteBuffer.allocate(1+length.length+ip.length+port.length+mac.length);
-            buffer.clear();
+            ByteBuffer buffer = ByteBuffer.allocate(1);
             buffer.put(Command.Client.heartbeat);
-            buffer.put(length);
-            buffer.put(ip);
-            buffer.put(port);
-            buffer.put(mac);
             buffer.flip();
            manager.socket.write(buffer,null,this);
         }
@@ -103,8 +102,11 @@ public class SocketCommand implements CompletionHandler<Integer,Void>{
     //认证成功
     public void sendAuthenticationSucceed() {
         if (manager.isValid()){
-            ByteBuffer byteBuffer = ByteBuffer.allocate(1);
+            ByteBuffer byteBuffer = ByteBuffer.allocate(1+4+6+4); // 协议+数据长度+mac+nat类型
             byteBuffer.put(Command.Client.authenticationSucceed);
+            byteBuffer.put(Parse.int2bytes(10));//数据长度10
+            byteBuffer.put(manager.info.getLocalMac());
+            byteBuffer.put(Parse.int2bytes(manager.info.natType));
             byteBuffer.flip();
             manager.socket.write(byteBuffer,null,this);
         }

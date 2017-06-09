@@ -20,12 +20,12 @@ public class Parse {
     public static final String _length = "length";
     public static final String _dataBlock = "dataBlock";
 
-    public static final String _udpPort1 = "udpPort1";
-    public static final String _udpPort2= "udpPort2";
+    public static final String _udpPort = "udpPort";
 
     public static final String _ipBytes = "ipBytes";
     public static final String _portInt = "portInt";
     public static final String _macBytes = "macBytes";
+    public static final String _natTypeBytes = "natTypeBytes";
 
     public static final String _localSourceBytes = "localSourceBytes";
     public static final String _connectTaskBytes = "connectTaskBytes";
@@ -57,6 +57,7 @@ public class Parse {
             byte[] data = null;
             //数据体长度
             int length = -1;
+
             if (byteBuffer.limit()>1){
                 length = byteBuffer.getInt(1);
                 data = new byte[length];
@@ -64,6 +65,7 @@ public class Parse {
                 byteBuffer.position(5);
                 byteBuffer.get(data,0,length);
             }
+
                 //根据协议,解析数据
             ParseOpers.selectTo(protocol,map,length,data);
         }catch (Exception e){

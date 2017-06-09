@@ -90,6 +90,12 @@ public class Command {
         //检测类型 fullnet
         public static final byte check_full_nat = 68;
         public static final byte check_full_nat_resp = 69;
+
+        //udp辅助服务器发送的消息
+        public static final byte udp_auxiliaty = 70;
+        //udp检测 - 转发消息到 辅助服务器
+        public static final byte turn_full_cone_check = 71;
+
     }
 
 }

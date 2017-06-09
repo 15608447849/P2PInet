@@ -7,7 +7,7 @@ import server.obj.IParameter;
 import server.imp.threads.P2POperate;
 import server.imp.servers.P2PServer;
 import utils.LOG;
-import utils.NetUtil;
+import utils.NetworkUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,9 +18,15 @@ import java.util.Random;
 
 public class Main {
 
+    public static final String TCPserverIp = "125.65.82.99";
+    public static final int TPO1 = 9999;
+    public static final int TPO2 = 8888;
+    public static final int TPO3 = 7777;
+
     public static void main(String[] args) {
 //            test();
 //            launchServer();
+//        launchUdpServer();
             launchClient();
 //            startSource("/psb.jpg");
     }
@@ -33,14 +39,31 @@ public class Main {
      */
     private static void launchServer(){
         try {
-        //启动服务器
-        IParameter info = new IParameter(NetUtil.getLocalIPInet(),9999,8888,7777);
+        //启动TCP服务器
+        IParameter info = new IParameter(NetworkUtil.getLocalIPInet(),TPO1,TPO2,TPO3);
         P2POperate operate = new P2POperate(5);
-        P2PServer server = new P2PServer(10);
+        P2PServer server = new P2PServer();
         server.initServer(info);
         server.connectServer(operate);//连接操作
         server.createUdpManager(5000,6000);
         server.startServer();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    /**
+     * 启动udp 辅助服务器
+     */
+    private static void launchUdpServer(){
+        try {
+            int port =  new Random().nextInt(10000)%(65535-10000+1) + 10000;
+            InetSocketAddress localUdpAddress = new InetSocketAddress(NetworkUtil.getLocalIPInet(),port);
+            InetSocketAddress remoteUdpAddress = new InetSocketAddress(TCPserverIp,TPO3);
+            IParameter info = new IParameter(localUdpAddress,remoteUdpAddress);
+            P2PServer server = new P2PServer();
+            server.initServer(info);
+            server.startServer();
+
         }catch (IOException e) {
             e.printStackTrace();
         }
@@ -61,9 +84,9 @@ public class Main {
                 dir.mkdir();
             }
             int port =  new Random().nextInt(10000)%(65535-10000+1) + 10000;
-            InetSocketAddress local = new InetSocketAddress(NetUtil.getLocalIPInet(),port);
+            InetSocketAddress local = new InetSocketAddress(NetworkUtil.getLocalIPInet(),port);
 //            InetSocketAddress server = new InetSocketAddress("172.16.0.198",9999);
-            InetSocketAddress server = new InetSocketAddress("39.108.87.46",9999);
+            InetSocketAddress server = new InetSocketAddress(TCPserverIp,9999);
             Info info = new Info(local,server);
             SourceManager sourceManager = new SourceManager(homeDirs);
             new SocketManager(info,sourceManager).connectServer();
@@ -84,8 +107,8 @@ public class Main {
              */
             String homeDirs = "C:\\FileServerDirs\\source";
             int port =  new Random().nextInt(10000)%(65535-10000+1) + 10000;
-            InetSocketAddress local = new InetSocketAddress(NetUtil.getLocalIPInet(),port);
-            InetSocketAddress server = new InetSocketAddress("39.108.87.46",9999);
+            InetSocketAddress local = new InetSocketAddress(NetworkUtil.getLocalIPInet(),port);
+            InetSocketAddress server = new InetSocketAddress(TCPserverIp,9999);
             Info info = new Info(local,server);
             SourceManager sourceManager = new SourceManager(homeDirs);
            SocketManager manager = new SocketManager(info,sourceManager);
@@ -123,14 +146,14 @@ public class Main {
 
 
     private static void test() {
-        InetAddress address =  NetUtil.getLocalIPInet();
+        InetAddress address =  NetworkUtil.getLocalIPInet();
         InetSocketAddress socket = new InetSocketAddress(address,9999);
         LOG.I( socket.getHostName()+" "+ socket.getHostString()+" "+socket.getAddress().getAddress().length+" "+socket.getPort());
 
         try {
             InetAddress address1 = InetAddress.getByAddress(socket.getAddress().getAddress());
             LOG.I( address1+" ");
-            LOG.I( "mac length: "+ NetUtil.getMACAddress(address1).length);
+            LOG.I( "mac length: "+ NetworkUtil.getMACAddress(address1).length);
             LOG.I("主机名:"+address.getHostName());
         } catch (Exception e) {
             e.printStackTrace();

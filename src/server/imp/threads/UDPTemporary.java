@@ -7,7 +7,7 @@ import server.abs.IOperate;
 import server.abs.IThreadInterface;
 import server.obj.CLI;
 import utils.LOG;
-import utils.NetUtil;
+import utils.NetworkUtil;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -139,7 +139,7 @@ public class UDPTemporary extends Thread{
 
                 if (connectTask.getCompele()==1){
                     //记录net信息
-                    if (NetUtil.macByte2String(mac).equals(clientA.getMac())){
+                    if (NetworkUtil.macByte2String(mac).equals(clientA.getMac())){
                         connectTask.setSrcNET(address.getAddress().getAddress(),address.getPort());
                         connectTask.setComplete(2); //填充了源 net信息
                         LOG.I("收到客户端A的心跳,设置 客户端A UDP NET 信息,成功. task state:"+connectTask.getCompele()+", clientA: "+address);
@@ -158,7 +158,7 @@ public class UDPTemporary extends Thread{
 
                 //设置客户端B的net信息
                 if (connectTask.getCompele()==2){
-                    if (NetUtil.macByte2String(mac).equals(clientB.getMac())){
+                    if (NetworkUtil.macByte2String(mac).equals(clientB.getMac())){
                         connectTask.setDesNET(address.getAddress().getAddress(),address.getPort());
                         connectTask.setComplete(3);
                         LOG.I("收到客户端B心跳,设置 客户端B UDP NET 信息,成功. task state:"+connectTask.getCompele()+", clientB"+address);
@@ -175,7 +175,7 @@ public class UDPTemporary extends Thread{
 
                 if (connectTask.getCompele() == 3){
                     //通知客户端A ,b的net信息
-                    if (NetUtil.macByte2String(mac).equals(clientA.getMac())){
+                    if (NetworkUtil.macByte2String(mac).equals(clientA.getMac())){
                         buffer.clear();
                         byte[] data = Parse.sobj2Bytes(connectTask);
                         int len = data.length;

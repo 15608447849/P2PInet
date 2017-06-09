@@ -71,14 +71,13 @@ public abstract class TranslateThread extends Thread{
         int type = translate.getHolderType();
         if (!(type == HOLDER_CLIENT_A || type == HOLDER_CLIENT_B)) return;
         byte shakePackage = type == HOLDER_CLIENT_A?Command.Client.clientAshakePackage:Command.Client.clienBshakePackage;
-        int i = 0;
-        InetAddress inetAddress = translate.getTerminalSocket().getAddress();
+
         while (true){
             buffer.clear();
             buffer.put(shakePackage);
             buffer.flip();
-//            translate.sendMessageToTarget(buffer, translate.getTerminalSocket(), translate.getChannel());
-            translate.sendMessageToTarget(buffer, new InetSocketAddress(inetAddress,i), translate.getChannel());
+            translate.sendMessageToTarget(buffer, translate.getTerminalSocket(), translate.getChannel());
+
             buffer.clear();
             InetSocketAddress terminal = (InetSocketAddress) translate.getChannel().receive(buffer);
             if (terminal!=null && terminal.equals(translate.getTerminalSocket())){
@@ -86,12 +85,7 @@ public abstract class TranslateThread extends Thread{
                 LOG.I(TAG+"收到对端信息, " +terminal +"  -> "+ buffer.get(0));
                 break;
             }
-            synchronized (this){
-                wait(1000);
-            }
-            i++;
-            LOG.I(TAG+ i);
-            if (i>=65536) break;
+
         }
     }
 

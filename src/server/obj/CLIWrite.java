@@ -3,7 +3,7 @@ package server.obj;
 import client.obj.SerializeConnectTask;
 import protocol.Command;
 import protocol.Parse;
-import utils.NetUtil;
+import utils.NetworkUtil;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -20,13 +20,12 @@ public class CLIWrite {
     /**
      * 通知认证NET类型
      */
-    public void notifyAuthentication(byte[] udp1portBytes,byte[] udp2portBytes) {
+    public void notifyAuthentication(byte[] udp1portBytes) {
         if (client.isValid()){
-            ByteBuffer buff = ByteBuffer.allocate(1+4+4+4);
+            ByteBuffer buff = ByteBuffer.allocate(1+4+4);
             buff.put(Command.Server.authenticationNetType);//命令
-            buff.put(Parse.int2bytes(8));
+            buff.put(Parse.int2bytes(4));
             buff.put(udp1portBytes);
-            buff.put(udp2portBytes);
             buff.flip();
             client.getSocket().write(buff);
         }
@@ -39,7 +38,7 @@ public class CLIWrite {
      */
     public void synchronizationSourceIssued(byte[] hostMacBytes,byte[] source) {
         if (client.getMac() != null
-                &&  !NetUtil.macByte2String(hostMacBytes).equals(client.getMac())
+                &&  !NetworkUtil.macByte2String(hostMacBytes).equals(client.getMac())
                 && client.isValid()){
                int len = source.length;
                byte[] lengthBytes = Parse.int2bytes(len);

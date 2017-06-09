@@ -1,7 +1,5 @@
 package protocol;
 
-import utils.LOG;
-
 import java.util.HashMap;
 
 import static protocol.Parse.*;
@@ -14,11 +12,14 @@ public class ParseOpers {
 
     protected static void selectTo(byte protocol,HashMap<String, Object> map, int length, byte[] data) throws Exception{
         if (protocol == Command.Client.heartbeat) {//心跳
-            ParseOpers.hearbeat(map,data);
+
+        }
+        if (protocol == Command.Client.authenticationSucceed){//客户端认证成功
+            authenticationSuccessed(map,data);
         }
         if (protocol == Command.Server.authenticationNetType){
             //认证
-            ParseOpers.authentication(map,data);
+            authentication(map,data);
         }
         //同步资源
         if (protocol == Command.Client.synchronizationSource){
@@ -26,7 +27,7 @@ public class ParseOpers {
         }
         //服务器下发资源信息
         if (protocol == Command.Server.trunSynchronizationSource){
-            trunSynchronizationSource(map,data);
+            turnSynchronizationSource(map,data);
         }
         //资源需求客户端 请求 服务器 建立与 资源源 的连接
         if (protocol == Command.Client.connectSourceClient){
@@ -41,17 +42,25 @@ public class ParseOpers {
             queryConnectUdp_der(map,data);
         }
     }
-    //认证
-    private static void authentication(HashMap<String, Object> map, byte[] data) {
-        //分解数据
-        byte[] port1 = new byte[4];
-        System.arraycopy(data, 0, port1, 0, 4);
-        byte[] port2 = new byte[4];
-        System.arraycopy(data, 4, port2, 0, 4);
-        map.put(_udpPort1,port1);
-        map.put(_udpPort2,port2);
-    }
 
+    /**
+     * 客户端认证,收到UDP端口
+     */
+    private static void authentication(HashMap<String, Object> map, byte[] data) {
+        map.put(_udpPort,data);
+    }
+    /**
+     * 客户端认证成功
+     * */
+    private static void authenticationSuccessed(HashMap<String, Object> map, byte[] data){
+        //  [mac,nat-type] - [6+4]
+        byte[] macBytes = new byte[6];
+        System.arraycopy(data, 0, macBytes, 0, 6);
+        byte[] natTypeBytes = new byte[4];
+        System.arraycopy(data, 6, natTypeBytes, 0, 4);
+        map.put(_macBytes, macBytes);
+        map.put(_natTypeBytes,natTypeBytes);
+    }
     /**
      * 索求资源客户端收到服务器的连接请求
      */
@@ -78,9 +87,9 @@ public class ParseOpers {
      * 服务器下发资源,检查同步
      * {"source对象"}
      */
-    private static void trunSynchronizationSource(HashMap<String, Object> map,byte[] data) {
+    private static void turnSynchronizationSource(HashMap<String, Object> map, byte[] data) {
         //复用方法 - 因为本来就转发
-        synchronizedSource(map,data);
+        map.put(_localSourceBytes, data);
     }
 
     /**
@@ -92,20 +101,5 @@ public class ParseOpers {
     }
 
 
-    /**
-     * 解析 客户端心跳数据包
-     * {客户端本机ip,本机端口,本机mac}
-     */
-    private static void hearbeat(HashMap<String, Object> map, byte[] data) {
-        //  [ip,port,mac] - [4byte+4byte+6byte]
-        byte[] ipBytes = new byte[4];
-        System.arraycopy(data, 0, ipBytes, 0, 4);
-        byte[] portBytes = new byte[4];
-        System.arraycopy(data, 4, portBytes, 0, 4);
-        byte[] macBytes = new byte[6];
-        System.arraycopy(data, 8, macBytes, 0, 6);
-        map.put(_ipBytes, ipBytes);
-        map.put(_portInt, Parse.bytes2int(portBytes));
-        map.put(_macBytes, macBytes);
-    }
+
 }

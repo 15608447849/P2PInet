@@ -4,17 +4,14 @@ import client.obj.Info;
 import client.sourceimp.SourceManager;
 import protocol.Parse;
 import utils.LOG;
-import utils.NetUtil;
+import utils.NetworkUtil;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
-import java.util.HashSet;
 import java.util.concurrent.Executors;
 
 /**
@@ -37,7 +34,7 @@ public class SocketManager extends Thread implements CompletionHandler<Void, Voi
         commander = new SocketCommand(this);
         reader = new SocketHandler(this,5);
         start();
-        LOG.I("客户端创建成功 , 本地地址: "+info.getLocalAddress()+" 物理地址: "+ NetUtil.macByte2String(info.getLocalMac()));
+        LOG.I("客户端创建成功 , 本地地址: "+info.getLocalAddress()+" 物理地址: "+ NetworkUtil.macByte2String(info.getLocalMac()));
 
     }
     //连接服务器

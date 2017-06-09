@@ -21,15 +21,11 @@ public class AuthenticationNet implements Excute.IAction {
     public void action(Intent intent) {
         SocketManager manager = intent.getSourceManager();
         //会收到 服务器 udp 端口号
-        byte[] portBytes = (byte[])intent.getMap().get(Parse._udpPort1);
-        int port1 = Parse.bytes2int(portBytes);
-        portBytes = (byte[])intent.getMap().get(Parse._udpPort2);
-        int port2 = Parse.bytes2int(portBytes);
-        InetSocketAddress address1 = new InetSocketAddress(manager.info.getServerAddress().getAddress(),port1);
-        InetSocketAddress address2 = new InetSocketAddress(manager.info.getServerAddress().getAddress(),port2);
-
+        byte[] portBytes = (byte[])intent.getMap().get(Parse._udpPort);
+        int port = Parse.bytes2int(portBytes);
+        InetSocketAddress address = new InetSocketAddress(manager.info.getServerAddress().getAddress(),port);
         try {
-            new AuthenticationThread(address1,address2,manager);
+            new AuthenticationThread(address,manager);
         } catch (IOException e) {
             e.printStackTrace();
         }

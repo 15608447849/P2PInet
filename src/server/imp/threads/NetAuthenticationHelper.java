@@ -24,6 +24,7 @@ public class NetAuthenticationHelper extends IThread {
     private Selector selector;
     private DatagramChannel channel_1;
     private DatagramChannel channel_2;
+    private InetSocketAddress remoteUdpServer;//认证辅助服务器地址
     private ByteBuffer byteBuffer;
 
     public NetAuthenticationHelper(IServer server) {
@@ -47,7 +48,7 @@ public class NetAuthenticationHelper extends IThread {
         this.channel_1.register(selector, SelectionKey.OP_READ);
         this.channel_2.register(selector, SelectionKey.OP_READ);
         //最大数据 : 标识符+IP+PORT = 1+4+4 = 9;
-        this.byteBuffer = ByteBuffer.allocate(9);
+        this.byteBuffer = ByteBuffer.allocate(1+4+4+4+4);
         launch();
         LOG.I("UDP NET 认证服务 ,启动.");
     }
@@ -98,6 +99,14 @@ public class NetAuthenticationHelper extends IThread {
             InetSocketAddress socketAddress = (InetSocketAddress) sc.receive(byteBuffer);
             byteBuffer.flip();
             byte tag = byteBuffer.get(0);
+            if (tag == Command.UDPAuthentication.udp_auxiliaty){
+                if (remoteUdpServer == null || !remoteUdpServer.equals(socketAddress) ){
+                    LOG.I("UDP认证辅助服务器已连接 , "+ socketAddress);
+                    remoteUdpServer = socketAddress;
+                }
+            }
+
+            //客户端判断网关信息
             if (tag == Command.UDPAuthentication.client_query_nat_address){
 
                 byte[] ipBytes = socketAddress.getAddress().getAddress();
@@ -106,16 +115,29 @@ public class NetAuthenticationHelper extends IThread {
                 byteBuffer.put(Command.UDPAuthentication.send_client_nat_address);
                 byteBuffer.put(ipBytes);
                 byteBuffer.put(portBytes);
+                if (remoteUdpServer!=null){
+                    ipBytes = remoteUdpServer.getAddress().getAddress();
+                    portBytes = Parse.int2bytes(remoteUdpServer.getPort());
+                    byteBuffer.put(ipBytes);
+                    byteBuffer.put(portBytes);
+                }
                 byteBuffer.flip();
                 sc.send(byteBuffer,socketAddress);
             }
-
+            //判断nat - full cone
             if (tag == Command.UDPAuthentication.check_full_nat){
-                //使用另外一个端口发送消息
-                byteBuffer.clear();
-                byteBuffer.put(Command.UDPAuthentication.check_full_nat_resp);
-                byteBuffer.flip();
-                channel_2.send(byteBuffer,socketAddress);
+                if (remoteUdpServer!=null){
+                    //通知认证辅助服务器,转发消息
+                    byteBuffer.clear();
+                    byteBuffer.put(Command.UDPAuthentication.turn_full_cone_check);
+                    //目标客户端的ip+port
+                    byteBuffer.put(socketAddress.getAddress().getAddress());
+                    byteBuffer.put(Parse.int2bytes(socketAddress.getPort()));
+                    byteBuffer.flip();
+                    sc.send(byteBuffer,remoteUdpServer);
+                }else{
+                    LOG.I("UDP认证辅助服务器未连接.");
+                }
             }
 
         } catch (IOException e) {

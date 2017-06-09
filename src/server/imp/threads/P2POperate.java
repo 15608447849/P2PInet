@@ -71,7 +71,7 @@ public class P2POperate extends Thread implements IOperate {
                     if((curTime - client.getUpdateTime()) > time){
                         iterator.remove();
                         client.close();//关闭连接
-                        LOG.E("移除客户端:"+client.toString() +" 当前队列大小:"+set.size());
+                        LOG.E("移除客户端:"+client.getMac()+" 当前队列大小:"+set.size());
                     }
                 }
             }

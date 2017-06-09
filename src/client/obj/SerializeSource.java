@@ -1,7 +1,7 @@
 package client.obj;
 
 import utils.MD5Util;
-import utils.NetUtil;
+import utils.NetworkUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +62,7 @@ public class SerializeSource implements Serializable{
     @Override
     public String toString(){
         StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append("资源发起者MAC: " + NetUtil.macByte2String(initiatorMacAddress));
+        stringBuffer.append("资源发起者MAC: " + NetworkUtil.macByte2String(initiatorMacAddress));
         stringBuffer.append(" 资源位置: "+position);
         stringBuffer.append(" ,资源名: "+fileName);
         stringBuffer.append(" ,资源大小: "+fileLength);

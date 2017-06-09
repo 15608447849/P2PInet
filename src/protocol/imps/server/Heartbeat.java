@@ -17,19 +17,14 @@ public class Heartbeat implements Excute.IAction {
     @Override
     public void action(Intent intent) {
         try {
-        HashMap<String,Object> map = intent.getMap();
-        //获取客户端 mac
-        byte[] macBytes =  (byte[]) map.get(Parse._macBytes);
-        //更新客户端信息
+        //更新客户端时间
         CLI client = intent.getServerCLI();
-        client.setMacAddress(macBytes);
         client.updateTime();
         if (!client.isAuthentication() && !client.isSendAuthentication()){
             IParameter parameter = intent.getIparam();
-            int port1 = parameter.udpLocalAddress1.getPort();
-            int port2 = parameter.udpLocalAddress2.getPort();
+            int port = parameter.udpLocalAddress1.getPort();
             //通知认证net类型
-            client.getWrite().notifyAuthentication(Parse.int2bytes(port1),Parse.int2bytes(port2));
+            client.getWrite().notifyAuthentication(Parse.int2bytes(port));
             client.setAuthentication(1);
         }
         if (!client.isExist()){

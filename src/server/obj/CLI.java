@@ -4,7 +4,7 @@ import protocol.Intent;
 import protocol.Parse;
 import server.abs.IOperate;
 import utils.LOG;
-import utils.NetUtil;
+import utils.NetworkUtil;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -29,6 +29,8 @@ public class CLI extends Thread implements CompletionHandler<Integer,ByteBuffer>
     private InetSocketAddress netSocket;
     //本机物理地址
     private byte[] localMac;
+    //nat类型
+    private int natType;
     //写
     private CLIWrite write;
     private boolean isExist;
@@ -62,7 +64,13 @@ public class CLI extends Thread implements CompletionHandler<Integer,ByteBuffer>
         this.netSocket = (InetSocketAddress) socket.getRemoteAddress();
     }
 
+    public int getNatType() {
+        return natType;
+    }
 
+    public void setNatType(int natType) {
+        this.natType = natType;
+    }
 
     /**
      * 是否是有效连接
@@ -161,7 +169,7 @@ public class CLI extends Thread implements CompletionHandler<Integer,ByteBuffer>
      * @return
      */
     public String getMac() {
-        return NetUtil.macByte2String(localMac);
+        return NetworkUtil.macByte2String(localMac);
     }
 
     /**
@@ -250,7 +258,7 @@ public class CLI extends Thread implements CompletionHandler<Integer,ByteBuffer>
     public void completed(Integer integer, ByteBuffer byteBuffer) {
 //      LOG.I("读取到: "+integer+" - "+byteBuffer);
         if (integer == -1){
-            LOG.E(this+" 客户端断线.");
+//            LOG.E(this+" 客户端断线.");
             close();
         }else{
             //处理

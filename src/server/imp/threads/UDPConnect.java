@@ -37,8 +37,8 @@ public class UDPConnect extends IThread implements IThreadInterface {
         isLoop = true;
         operate = (IOperate) server.getParam("operate");
         IParameter param = (IParameter)server.getParam("param");
-        serverPorts = param.getPorts();
-        ipBytes = param.getIpBytes();
+        serverPorts = param.ports;
+        ipBytes = param.ipBytes;
         launch();//启动自己
     }
 
