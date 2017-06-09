@@ -48,6 +48,7 @@ public class AuthenticationThread extends Thread{
         this.server1Address = address;
         this.manager = manager;
         this.info = manager.info;
+        this.info.natType = 0;
         int localPort = PortManager.get().getPort();
         this.local = new InetSocketAddress(info.getLocalAddress().getAddress(),localPort);
         channel = DatagramChannel.open().bind(local);
@@ -141,16 +142,6 @@ public class AuthenticationThread extends Thread{
         channel.send(byteBuffer,server1Address);
         LOG.I("请求服务器检测 symmetric nat, address: " + server1Address);
     }
-
-
-
-
-
-
-
-
-
-
 
     /**接受消息*/
     private void receiveMessage() throws IOException{

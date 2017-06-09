@@ -170,7 +170,6 @@ public class NetAuthenticationHelper extends IThread {
         @Override
         public void run() {
             while (isRun){
-                LOG.I("------------");
                 if ( (System.currentTimeMillis() - updateTime) >=  timeSun){
                     if (remoteUdpServer!=null){
                         remoteUdpServer = null;
