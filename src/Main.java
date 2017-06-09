@@ -18,12 +18,24 @@ import java.util.Random;
 
 public class Main {
 
-    public static final String TCPserverIp = "125.65.82.99";
+    public static String TCPserverIp = "125.65.82.99";
     public static final int TPO1 = 9999;
     public static final int TPO2 = 8888;
 
 
     public static void main(String[] args) {
+
+            if (args!=null && args.length==2){
+                String command = args[0];
+                TCPserverIp = args[1];
+                if (command.equalsIgnoreCase("tcp") ){
+                    launchServer();
+                }
+                if (command.equalsIgnoreCase("udp")){
+                    launchUdpServer();
+                }
+            }
+
 //            test();
 //            launchServer();
 //        launchUdpServer();
