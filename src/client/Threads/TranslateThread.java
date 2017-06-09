@@ -100,7 +100,6 @@ public abstract class TranslateThread extends Thread{
     abstract void closeChannel() throws Exception;
     @Override
     public void run() {
-
         try {
             //打开连接
             openChannel();

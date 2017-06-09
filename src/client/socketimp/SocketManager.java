@@ -87,6 +87,12 @@ public class SocketManager extends Thread implements CompletionHandler<Void, Voi
      */
     public void reConnection() {
         closeConnect();
+        try {
+            synchronized (this){
+                this.wait(1000);
+            }
+        } catch (InterruptedException e) {
+        }
         connectServer();
     }
 
@@ -94,10 +100,10 @@ public class SocketManager extends Thread implements CompletionHandler<Void, Voi
         if (socket==null) return;
         try {
             socket.close();
-            socket = null;
+            LOG.E("TCP CONNECTED CLOSE.");
         } catch (IOException e) {
-
         }finally {
+            socket = null;
             isConnected = false;
         }
     }

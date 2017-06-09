@@ -23,14 +23,12 @@ public class AuthenticationClientAuxiliary extends IThread{
     private InetSocketAddress serverAddress;
     private DatagramChannel channel;
     private ByteBuffer buffer;
-    private Selector selector;
-    private int count = 0;
     private SendUDPMessageThread sths;
     public AuthenticationClientAuxiliary(IServer server) {
         super(server);
         IParameter param = (IParameter) server.getParam("param");
-        localAddress = param.udpLocalAddress;
-        serverAddress = param.udpRemoteServerAddress;
+        localAddress = param.udpLocalAddress_Sec;
+        serverAddress = param.udpLocalAddress_Main;
         launch();
     }
     @Override

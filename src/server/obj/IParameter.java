@@ -17,22 +17,13 @@ public class IParameter {
      * udp 认证地址1
      * @param tcpLocalAddress
      */
-    public InetSocketAddress udpLocalAddress1;
-    /**
-     * udp 认证地址2
-     * @param tcpLocalAddress
-     */
-    public InetSocketAddress udpLocalAddress2;
+    public InetSocketAddress udpLocalAddress_Main;
+
 
     /**
      * UDP认证的辅助地址
      */
-    public InetSocketAddress udpLocalAddress;
-
-    /**
-     * UDP认证的主服务器地址
-     */
-    public InetSocketAddress udpRemoteServerAddress;
+    public InetSocketAddress udpLocalAddress_Sec;
 
     /**
      * 线程数设置
@@ -42,18 +33,17 @@ public class IParameter {
     public byte[] ipBytes;
     public int[] ports;
 
-    public IParameter(InetAddress address,int tcpPort,int udpPort1,int udpPort2) {
+    public IParameter(InetAddress address,int tcpPort,int udpPort1) {
         ipBytes = address.getAddress();
-        ports = new int[]{tcpPort,udpPort1,udpPort2};
+        ports = new int[]{tcpPort,udpPort1};
         tcpLocalAddress = new InetSocketAddress(address,tcpPort);
-        udpLocalAddress1 = new InetSocketAddress(address,udpPort1);
-        udpLocalAddress2 = new InetSocketAddress(address,udpPort2);
+        udpLocalAddress_Main = new InetSocketAddress(address,udpPort1);
         serverType = 0; //通讯服务器
     }
     //udp类型认证的辅助服务器
     public IParameter(InetSocketAddress address,InetSocketAddress serverAddress) {
-        udpLocalAddress = address;
-        udpRemoteServerAddress = serverAddress;
+        udpLocalAddress_Sec = address;
+        udpLocalAddress_Main = serverAddress;
         serverType = 1; //udp认证的辅助服务器
     }
 

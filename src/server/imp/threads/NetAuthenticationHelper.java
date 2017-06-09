@@ -1,5 +1,6 @@
 package server.imp.threads;
 
+import client.socketimp.PortManager;
 import protocol.Command;
 import protocol.Parse;
 import server.abs.IServer;
@@ -30,8 +31,9 @@ public class NetAuthenticationHelper extends IThread {
     public NetAuthenticationHelper(IServer server) {
         super(server);
         IParameter parameter = (IParameter) server.getParam("param");
+        InetSocketAddress address2 = new InetSocketAddress(PortManager.get().getPort());
         try {
-            init(parameter.udpLocalAddress1,parameter.udpLocalAddress2);
+            init(parameter.udpLocalAddress_Main,address2);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -139,6 +141,7 @@ public class NetAuthenticationHelper extends IThread {
                     LOG.I("UDP认证辅助服务器未连接.");
                 }
             }
+            //客户端判断 Restricted Cone NAT还是Port Restricted Cone NAT
 
         } catch (IOException e) {
             e.printStackTrace();

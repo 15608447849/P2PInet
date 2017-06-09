@@ -21,7 +21,7 @@ public class Main {
     public static final String TCPserverIp = "125.65.82.99";
     public static final int TPO1 = 9999;
     public static final int TPO2 = 8888;
-    public static final int TPO3 = 7777;
+
 
     public static void main(String[] args) {
 //            test();
@@ -40,7 +40,7 @@ public class Main {
     private static void launchServer(){
         try {
         //启动TCP服务器
-        IParameter info = new IParameter(NetworkUtil.getLocalIPInet(),TPO1,TPO2,TPO3);
+        IParameter info = new IParameter(NetworkUtil.getLocalIPInet(),TPO1,TPO2);
         P2POperate operate = new P2POperate(5);
         P2PServer server = new P2PServer();
         server.initServer(info);
@@ -58,12 +58,11 @@ public class Main {
         try {
             int port =  new Random().nextInt(10000)%(65535-10000+1) + 10000;
             InetSocketAddress localUdpAddress = new InetSocketAddress(NetworkUtil.getLocalIPInet(),port);
-            InetSocketAddress remoteUdpAddress = new InetSocketAddress(TCPserverIp,TPO3);
+            InetSocketAddress remoteUdpAddress = new InetSocketAddress(TCPserverIp,TPO2);
             IParameter info = new IParameter(localUdpAddress,remoteUdpAddress);
             P2PServer server = new P2PServer();
             server.initServer(info);
             server.startServer();
-
         }catch (IOException e) {
             e.printStackTrace();
         }

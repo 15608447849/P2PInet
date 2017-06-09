@@ -5,9 +5,6 @@ import protocol.Intent;
 import protocol.Parse;
 import server.obj.CLI;
 import server.obj.IParameter;
-import utils.LOG;
-
-import java.util.HashMap;
 
 /**
  * Created by user on 2017/6/1.
@@ -22,7 +19,7 @@ public class Heartbeat implements Excute.IAction {
         client.updateTime();
         if (!client.isAuthentication() && !client.isSendAuthentication()){
             IParameter parameter = intent.getIparam();
-            int port = parameter.udpLocalAddress1.getPort();
+            int port = parameter.udpLocalAddress_Main.getPort();
             //通知认证net类型
             client.getWrite().notifyAuthentication(Parse.int2bytes(port));
             client.setAuthentication(1);

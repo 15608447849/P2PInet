@@ -95,7 +95,7 @@ public class UDPTemporary extends Thread{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //通知A
+        //通知A连接
         notifyClientAConnect();
         //开始读取
         try {
@@ -119,15 +119,17 @@ public class UDPTemporary extends Thread{
     }
 
 
-
-
+    /**
+     *处理消息
+     * @param key
+     */
     private void handler(SelectionKey key) {
         try {
             DatagramChannel sc = (DatagramChannel) key.channel();
             buffer.clear();
             InetSocketAddress address = (InetSocketAddress) sc.receive(buffer);
             //协议类型,数据长度,信息序列化对象
-//            LOG.E("UDP "+this+" 接受到数据:"+ address+" ----> "+buffer);
+//          LOG.E("UDP "+this+" 接受到数据:"+ address+" ----> "+buffer);
             buffer.flip();
             byte cmd = buffer.get(0);
 //             LOG.E("UDP "+this+" 接受到数据:"+ address+" ----> "+buffer+ " 命令:"+ cmd);
