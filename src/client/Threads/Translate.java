@@ -12,8 +12,8 @@ import java.nio.channels.DatagramChannel;
  * 传输数据对象
  */
 public class Translate {
-    public static final int HOLDER_CLIENT_UP = 0;
-    public static final int HOLDER_CLIENT_DOWN = 1;
+    public static final int HOLDER_CLIENT_UP = 1;
+    public static final int HOLDER_CLIENT_DOWN = -1;
     //
     private int holderType;
     //物理地址

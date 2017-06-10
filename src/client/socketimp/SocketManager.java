@@ -18,9 +18,9 @@ import java.util.concurrent.Executors;
  * Created by user on 2017/6/1.
  *  连接
  */
-public class SocketManager extends Thread implements CompletionHandler<Void, Void> {
-
-
+public class SocketManager implements CompletionHandler<Void, Void> {
+    //重新连接时间
+    private static final int reconnectTime = 1000 * 15;
     public Info info;
     public AsynchronousSocketChannel socket;
     public SocketHandler reader;
@@ -33,7 +33,6 @@ public class SocketManager extends Thread implements CompletionHandler<Void, Voi
         this.sourceManager = sourceManager;
         commander = new SocketCommand(this);
         reader = new SocketHandler(this,5);
-        start();
         LOG.I("客户端创建成功 , 本地地址: "+info.getLocalAddress()+" 物理地址: "+ NetworkUtil.macByte2String(info.getLocalMac()));
 
     }
@@ -89,7 +88,7 @@ public class SocketManager extends Thread implements CompletionHandler<Void, Voi
         closeConnect();
         try {
             synchronized (this){
-                this.wait(1000);
+                this.wait(reconnectTime);
             }
         } catch (InterruptedException e) {
         }
@@ -116,21 +115,5 @@ public class SocketManager extends Thread implements CompletionHandler<Void, Voi
         return socket!=null && socket.isOpen() && isConnected;
     }
 
-    @Override
-    public void run() {
-//        synchronized (this){
-//            try {
-//                this.wait(10 * 1000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            if (isConnected){
-//
-//            }
-//            if (!isValid()){
-//                reConnection();
-//            }
-//        }
 
-    }
 }

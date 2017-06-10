@@ -33,11 +33,19 @@ public class Main {
             if (command.equalsIgnoreCase("udp")){
                 launchUdpServer();
             }
+        }else{
+            if (args!=null && args.length == 1){
+                launchClient_linux();
+            }else{
+                startSource("/psb.jpg");
+            }
         }
+
+
 //            test();
 //            launchServer();
 //        launchUdpServer();
-            launchClient();
+//            launchClient(null);
 //            startSource("/psb.jpg");
     }
 
@@ -82,19 +90,20 @@ public class Main {
     /**
      * 启动客户端
      */
-    private static void launchClient() {
+    private static void launchClient(String homeDirs) {
         try {
+           if ( homeDirs==null){
+               homeDirs = "C:\\FileServerDirs\\temp";
+           }
             /**
              * 写进配置文件中,读取.
              */
-            String homeDirs = "C:\\FileServerDirs\\temp";
             File dir = new File(homeDirs);
             if (!dir.exists()){
                 dir.mkdir();
             }
             int port =  new Random().nextInt(10000)%(65535-10000+1) + 10000;
             InetSocketAddress local = new InetSocketAddress(NetworkUtil.getLocalIPInet(),port);
-//            InetSocketAddress server = new InetSocketAddress("172.16.0.198",9999);
             InetSocketAddress server = new InetSocketAddress(TCPserverIp,9999);
             Info info = new Info(local,server);
             SourceManager sourceManager = new SourceManager(homeDirs);
@@ -103,7 +112,9 @@ public class Main {
             e.printStackTrace();
         }
     }
-
+    private static void launchClient_linux() {
+        launchClient("/home");
+    }
     /**
      * 通知其他客户端本地下载了一个文件
      * @param savePath

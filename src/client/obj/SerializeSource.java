@@ -16,9 +16,9 @@ import java.io.Serializable;
 public class SerializeSource implements Serializable{
 
     /**
-     * 资源同步发起者的mac地址
+     * 资源上传
      */
-    private byte[] initiatorMacAddress;
+    private byte[] uploaderMac;
     /**
      * 相对路径
      */
@@ -52,17 +52,17 @@ public class SerializeSource implements Serializable{
         return md5Hash;
     }
 
-    public void setInitiatorMacAddress(byte[] initiatorMacAddress) {
-        this.initiatorMacAddress = initiatorMacAddress;
+    public void setUploaderMac(byte[] uploaderMac) {
+        this.uploaderMac = uploaderMac;
     }
-    //资源发起者
-    public byte[] getInitiatorMacAddress() {
-        return initiatorMacAddress;
+    //资源上传者
+    public byte[] getUploaderMac() {
+        return uploaderMac;
     }
     @Override
     public String toString(){
         StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append("资源发起者MAC: " + NetworkUtil.macByte2String(initiatorMacAddress));
+        stringBuffer.append("上传主机: " + NetworkUtil.macByte2String(uploaderMac));
         stringBuffer.append(" 资源位置: "+position);
         stringBuffer.append(" ,资源名: "+fileName);
         stringBuffer.append(" ,资源大小: "+fileLength);

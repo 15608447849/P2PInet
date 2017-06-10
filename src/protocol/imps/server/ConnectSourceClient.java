@@ -20,7 +20,7 @@ public class ConnectSourceClient implements Execute.IAction {
         try {
             HashMap<String,Object> map = intent.getMap();
             SerializeConnectTask connTask = (SerializeConnectTask) Parse.bytes2Sobj((byte[]) map.get(Parse._connectTaskBytes));
-            LOG.I("建立连接请求: "+ connTask.getSourceMac()+ " -> "+ connTask.getDestinationMac());
+            LOG.I("建立连接请求: "+ connTask.getDownloadHostMac()+ " -> "+ connTask.getUploadHostMac());
             IThreadInterface udpManager = (IThreadInterface) intent.getOperate().getServer().getParam("udp");
             udpManager.putNewTask(connTask);
         } catch (Exception e) {

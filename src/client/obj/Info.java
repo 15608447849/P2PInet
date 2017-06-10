@@ -51,7 +51,7 @@ public class Info {
     public byte[] getLocalMac() {
         return localMac;
     }
-    public String getLocalString(){
+    public String getLocalMacString(){
         return NetworkUtil.macByte2String(localMac);
     }
 

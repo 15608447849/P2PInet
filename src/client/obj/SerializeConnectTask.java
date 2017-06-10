@@ -1,9 +1,7 @@
 package client.obj;
 
-import protocol.Parse;
 import utils.NetworkUtil;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -13,24 +11,21 @@ import java.net.UnknownHostException;
  * Created by user on 2017/6/5.
  */
 public class SerializeConnectTask implements Serializable {
-    byte[] requestHostMac;//请求资源的主机地址
+    private byte[] downloadMac;//请求资源的主机地址
     private SerializeSource source;//请求得资源 ->包含资源发起者
     /**
      * 服务器udp临时端口 - 服务器完成
      */
-    private byte[] serverTempUDPIp;
-    private int serverTempUDPPort = 0;
+    private InetSocketAddress serverTempAddress;
 
     /**
-     * 资源源的NET信息 - 服务器填写
+     * 上传主机NET信息 - 服务器填写
      */
-    private byte[] srcUDPIp;
-    private int srcUDPPort;
+   private InetSocketAddress uploadHostAddress;
     /**
-     * 请求者的NET信息 - 服务器填写
+     * 下载主机的NET信息 - 服务器填写
      */
-    private byte[] desUDPIp;
-    private int desUDPPort;
+        private InetSocketAddress downloadHostAddress;
 
     /**
      * 1 服务器临时端口完成
@@ -40,59 +35,59 @@ public class SerializeConnectTask implements Serializable {
     private int complete = 0;
 
 
+
     public SerializeConnectTask( SerializeSource source) {
         this.source = source;
     }
-    public void setRequestHostMac(byte[] requestHostMac){
-        this.requestHostMac = requestHostMac;
+    public void setDownloadMac(byte[] downloadMac){
+        this.downloadMac = downloadMac;
     }
-    public void setServerTempUDP(byte[] tempIp, int tempPort){
-        this.serverTempUDPIp = tempIp;
-        this.serverTempUDPPort = tempPort;
+    public void setServerTempAddress(InetSocketAddress address){
+        serverTempAddress = address;
+        complete = 1;
     }
-    public InetSocketAddress getServerTempUDP() throws UnknownHostException {
-        return new InetSocketAddress(InetAddress.getByAddress(serverTempUDPIp),serverTempUDPPort);
+    public InetSocketAddress getServerTempAddress(){
+        return serverTempAddress;
     }
-    //源
-    public void setSrcNET(InetSocketAddress address){
-        if (complete<3 && srcUDPIp == null){
-            this.srcUDPIp = address.getAddress().getAddress();
-            this.srcUDPPort = address.getPort();
+    //下载网关
+    public void setDownloadHostAddress(InetSocketAddress address){
+        if (complete<3 && downloadHostAddress == null){
+            downloadHostAddress = address;
             complete++;
         }
 
     }
-    public InetSocketAddress getSrcNET() throws UnknownHostException {
-        return new InetSocketAddress(InetAddress.getByAddress(srcUDPIp),srcUDPPort);
+    //下载
+    public InetSocketAddress getDownloadHostAddress() throws UnknownHostException {
+        return downloadHostAddress;
     }
-    //目标
-    public void setDesNET(InetSocketAddress address){
-        if (complete<3 && desUDPIp == null){
-            this.desUDPIp = address.getAddress().getAddress();
-            this.desUDPPort =  address.getPort();
-            complete++;
-        }
-    }
-    public InetSocketAddress getDesNet() throws UnknownHostException{
-        return new InetSocketAddress(InetAddress.getByAddress(desUDPIp),desUDPPort);
-    }
+
     public void setComplete(int i){
         complete = i;
     }
-    public int getCompele(){
+    public int getComplete(){
         return complete;
     }
 
-    public String getSourceMac() {
 
-        return NetworkUtil.macByte2String(requestHostMac);
+    //上传
+    public void setUploadHostAddress(InetSocketAddress address){
+        if (complete<3 && uploadHostAddress == null){
+           uploadHostAddress = address;
+            complete++;
+        }
     }
-
-    public String getDestinationMac(){
-        return NetworkUtil.macByte2String(getSource().getInitiatorMacAddress());
+    public InetSocketAddress getUploadHostAddress() {
+        return uploadHostAddress;
+    }
+    public String getUploadHostMac(){
+        return NetworkUtil.macByte2String(getSource().getUploaderMac());
     }
     public SerializeSource getSource(){
-
         return source;
     }
+    public String getDownloadHostMac() {
+        return NetworkUtil.macByte2String(downloadMac);
+    }
+
 }

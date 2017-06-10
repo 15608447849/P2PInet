@@ -28,7 +28,7 @@ public class SynchronizationSource implements Execute.IAction{
             HashMap<String,Object> map = intent.getMap();
             byte[] sourceBytes =  (byte[]) map.get(Parse._localSourceBytes);
             SerializeSource source = (SerializeSource) Parse.bytes2Sobj(sourceBytes);
-            byte[] macBytes =  source.getInitiatorMacAddress();
+            byte[] macBytes =  source.getUploaderMac();
             LOG.I("同步资源请求 : [ "+source +" ]");
 
            //转发同步资源到其他客户端

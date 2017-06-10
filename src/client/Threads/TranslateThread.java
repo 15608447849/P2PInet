@@ -22,6 +22,7 @@ public abstract class TranslateThread extends Thread{
     protected Translate translate;
     protected static final int OVER_TIME_INIT = 0;
     protected static final int OVER_TIME_OVER = 100;
+    protected  static final int loopTime = 100;
     protected int overTimeCount = OVER_TIME_INIT;
     public TranslateThread(Translate translate) {
         this.translate = translate;
@@ -61,12 +62,13 @@ public abstract class TranslateThread extends Thread{
                     byteBuffer.get(data);
                     SerializeTranslate strans = (SerializeTranslate) Parse.bytes2Sobj(data);
                     String macStr = NetworkUtil.macByte2String(translate.getMac());
-                    if (macStr.equals(strans.connectTask.getSourceMac())){
-                        translate.setTerminalSocket(strans.connectTask.getDesNet());
-                    }else if (macStr.equals(strans.connectTask.getDestinationMac())){
-                        translate.setTerminalSocket(strans.connectTask.getSrcNET());
+                    if (macStr.equals(strans.connectTask.getDownloadHostMac())){
+                        translate.setTerminalSocket(strans.connectTask.getUploadHostAddress());
+                    }else if (macStr.equals(strans.connectTask.getUploadHostMac())){
+                        translate.setTerminalSocket(strans.connectTask.getDownloadHostAddress());
                     }
                      if (translate.getTerminalSocket()!=null){
+                         translate.setMode(strans.mode);
                         //回复服务器
                          respondServerHeartbeat();
                          //进入下一步
@@ -75,7 +77,7 @@ public abstract class TranslateThread extends Thread{
                 }
             }
             synchronized (this){
-                wait(10);
+                this.wait(loopTime);
             }
             overTimeCount++;
         }
@@ -90,6 +92,7 @@ public abstract class TranslateThread extends Thread{
     protected void sendMessageToTerminal() throws Exception{
         overTimeCount = OVER_TIME_INIT;
         int mode = translate.getMode();
+        LOG.I("模式: "+ mode);
         if (mode==0) return;
         if (mode == 1){
             //主动模式
@@ -108,29 +111,40 @@ public abstract class TranslateThread extends Thread{
     //主动联系对方
     protected void activeMode(){
         LOG.I("进入主动连接对方 >> "+ translate.getTerminalSocket());
+
         ByteBuffer buffer = translate.getBuffer();
+        buffer.clear();
+        buffer.put(Command.UDPTranslate.shakePackage);
+        buffer.flip();
+        try {
+            translate.sendMessageToTarget(buffer, translate.getTerminalSocket(), translate.getChannel());//发送信息
+            LOG.I("握手包已发送.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         while (isTimeOver()){
             try {
                 buffer.clear();
-                buffer.put(Command.UDPTranslate.shakePackage);
-                buffer.flip();
-                translate.sendMessageToTarget(buffer, translate.getTerminalSocket(), translate.getChannel());//发送信息
-
-                buffer.clear();
                 InetSocketAddress terminal = (InetSocketAddress) translate.getChannel().receive(buffer);//等待接收
-                if (terminal!=null && terminal.equals(translate.getTerminalSocket())){
+                LOG.I(terminal+" # " + overTimeCount);
+                if (terminal!=null){
                     buffer.flip();
                     if (buffer.get(0) == Command.UDPTranslate.shakePackage_resp){
-                        LOG.I(TAG+"收到对端信息, " +terminal +" ,握手成功.进入数据传输. ");
+                        LOG.I(TAG+" 收到对端信息, " +terminal +" ,握手成功.进入数据传输. ");
                         translate.setConnectSuccess();
                         overTimeCount = OVER_TIME_OVER;
                     }
                 }
-            } catch (IOException e) {
+                synchronized (this){
+                    this.wait(loopTime);
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
             }finally {
                 overTimeCount++;
             }
+
         }
     }
     //被动接受对方信息
@@ -141,6 +155,7 @@ public abstract class TranslateThread extends Thread{
             try {
                 buffer.clear();
                 InetSocketAddress terminal = (InetSocketAddress) translate.getChannel().receive(buffer);//等待接收
+                LOG.I(terminal+" # "  + overTimeCount );
                 if (terminal!=null && terminal.getAddress().equals(translate.getTerminalSocket().getAddress())){
                     buffer.flip();
                     if (buffer.get(0) == Command.UDPTranslate.shakePackage){
@@ -148,14 +163,36 @@ public abstract class TranslateThread extends Thread{
                         buffer.clear();
                         buffer.put(Command.UDPTranslate.shakePackage_resp);
                         buffer.flip();
-                        translate.sendMessageToTarget(buffer, translate.getTerminalSocket(), translate.getChannel());//发送信息
-                        LOG.I(TAG+"收到对端信息, " +terminal +" ,已发送握手回执.进入数据传输. ");
-
+                        translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
+                        synchronized (this){
+                            this.wait(100);
+                        }
+                        buffer.rewind();
+                        translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
+                        synchronized (this){
+                            this.wait(100);
+                        }
+                        buffer.rewind();
+                        translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
+                        synchronized (this){
+                            this.wait(100);
+                        }
+                        buffer.rewind();
+                        translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
+                        synchronized (this){
+                            this.wait(100);
+                        }
+                        buffer.rewind();
+                        translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
+                        LOG.I(TAG+"收到对端信息, " +terminal +" ,已发送握手回执.进入数据传输. "+translate.getTerminalSocket() +" - "+buffer);
                         translate.setConnectSuccess();
                         overTimeCount = OVER_TIME_OVER;
                     }
                 }
-            } catch (IOException e) {
+                synchronized (this){
+                    this.wait(loopTime);
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
             }finally {
                 overTimeCount++;
@@ -185,6 +222,7 @@ public abstract class TranslateThread extends Thread{
                 e.printStackTrace();
             }
         }
+        LOG.I("关闭连接: " + this);
     }
     @Override
     public void run() {
@@ -207,7 +245,7 @@ public abstract class TranslateThread extends Thread{
     }
 
     protected boolean isTimeOver(){
-        return overTimeCount<=OVER_TIME_OVER;
+        return overTimeCount<OVER_TIME_OVER;
     }
     /**
      * 发送心跳到服务器
@@ -228,6 +266,7 @@ public abstract class TranslateThread extends Thread{
         buffer.put(translate.getMac());
         buffer.flip();
         translate.sendMessageToTarget(buffer, translate.getServerSocket(), translate.getChannel());
+        LOG.I("已回复客户端命令回执."+translate.getServerSocket()+" --> "+buffer);
     }
 
 

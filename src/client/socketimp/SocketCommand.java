@@ -65,7 +65,7 @@ public class SocketCommand implements CompletionHandler<Integer,Void>{
     public void synchronizationSource(SerializeSource source) throws IOException {
         if (manager.isValid()){
             byte[] mac = manager.info.getLocalMac();//mac地址
-            source.setInitiatorMacAddress(mac);//设置资源同步发起者MAC
+            source.setUploaderMac(mac);//设置资源同步发起者MAC
             byte[] sourceArr = Parse.sobj2Bytes(source);//资源
             byte[] length = Parse.int2bytes(sourceArr.length);//长度
             ByteBuffer buffer = ByteBuffer.allocate(1+length.length+sourceArr.length);
@@ -86,7 +86,7 @@ public class SocketCommand implements CompletionHandler<Integer,Void>{
     public void connectSourceClient(SerializeConnectTask connTask) throws IOException {
         if (manager.isValid()){
             byte[] mac = manager.info.getLocalMac();//mac地址
-            connTask.setRequestHostMac(mac);
+            connTask.setDownloadMac(mac);
             byte[] sourceArr = Parse.sobj2Bytes(connTask);//资源
             byte[] length = Parse.int2bytes(sourceArr.length);//长度
             ByteBuffer buffer = ByteBuffer.allocate(1+length.length+sourceArr.length);
