@@ -24,13 +24,13 @@ public class Main {
 
 
     public static void main(String[] args) {
-//        test1();
 //            test();
 //            launchServer();
 //        launchUdpServer();
-//            launchClient();
+            launchClient();
 //            startSource("/psb.jpg");
     }
+
 
 
 
@@ -168,20 +168,6 @@ public class Main {
 
 
 
-
-    private static void test1() {
-        final int a = -1,b=1,c =4;
-        LOG.E(  ""+((a<<2) + (a&a) + (a|a)));
-        LOG.E(  ""+((a<<2) + (a&b)  + (a|b)));
-        LOG.E(  ""+((a<<2) + (a&c) + (a|c)));
-        LOG.E(  ""+((b<<2) + (b&a) + (b|a)));
-        LOG.E(  ""+((b<<2) + (b&b) + (b|b)));
-        LOG.E(  ""+((b<<2) +(b&c)+ (b|c)));
-        LOG.E(  ""+((c<<2) +(c&a)+ (c|a)));
-        LOG.E(  ""+((c<<2) +(c&b) + (c|b)));
-        LOG.E(  ""+((c<<2) +(c&c)+ (c|c)));
-
-    }
 
 
 }

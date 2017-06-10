@@ -114,7 +114,7 @@ public class AuthenticationClientAuxiliary extends IThread{
                         }
                     }
                     try {
-                        this.wait(1000*30);
+                        this.wait(1000*8);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

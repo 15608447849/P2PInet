@@ -59,9 +59,14 @@ public class Command {
     public static class UDPAuthentication{
         public static final byte client_query_nat_address = 65;
         public static final byte send_client_nat_address = 66;
-        //检测类型 fullnet
+
+        //检测类型 full net
         public static final byte check_full_nat = 68;
         public static final byte check_full_nat_resp = 69;
+
+        //检测 port restricted nat
+        public static final byte check_restricted_nat = 78;
+        public static final byte check_restricted_nat_resp = 79;
 
         //udp辅助服务器发送的消息
         public static final byte udp_auxiliaty = 70;

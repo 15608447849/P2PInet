@@ -23,11 +23,11 @@ import java.util.Iterator;
  */
 public class NetAuthenticationHelper extends IThread {
     private Selector selector;
-    private DatagramChannel channel_1;
-    private DatagramChannel channel_2;
+    private DatagramChannel channel1;
+    private DatagramChannel channel2;
     private InetSocketAddress remoteUdpServer;//认证辅助服务器地址
     private ByteBuffer byteBuffer;
-
+    private final CheckAuxiliary caltd = new CheckAuxiliary();
     public NetAuthenticationHelper(IServer server) {
         super(server);
         IParameter parameter = (IParameter) server.getParam("param");
@@ -41,14 +41,14 @@ public class NetAuthenticationHelper extends IThread {
 
     private  void init(InetSocketAddress address1,InetSocketAddress address2) throws IOException {
         this.selector = Selector.open();
-        this.channel_1 = DatagramChannel.open().bind(address1);
-        this.channel_2 = DatagramChannel.open().bind(address2);
+        this.channel1 = DatagramChannel.open().bind(address1);
+        this.channel2 = DatagramChannel.open().bind(address2);
 
-        this.channel_1.configureBlocking(false);
-        this.channel_2.configureBlocking(false);
+        this.channel1.configureBlocking(false);
+        this.channel2.configureBlocking(false);
 
-        this.channel_1.register(selector, SelectionKey.OP_READ);
-        this.channel_2.register(selector, SelectionKey.OP_READ);
+        this.channel1.register(selector, SelectionKey.OP_READ);
+        this.channel2.register(selector, SelectionKey.OP_READ);
         //最大数据 : 标识符+IP+PORT = 1+4+4 = 9;
         this.byteBuffer = ByteBuffer.allocate(1+4+4+4+4);
         launch();
@@ -102,10 +102,12 @@ public class NetAuthenticationHelper extends IThread {
             byteBuffer.flip();
             byte tag = byteBuffer.get(0);
             if (tag == Command.UDPAuthentication.udp_auxiliaty){
+                caltd.updateTime =System.currentTimeMillis();
                 if (remoteUdpServer == null || !remoteUdpServer.equals(socketAddress) ){
-                    LOG.I("UDP认证辅助服务器已连接 , "+ socketAddress);
                     remoteUdpServer = socketAddress;
+                    LOG.I("UDP认证辅助服务器已连接 , "+ socketAddress);
                 }
+
             }
 
             //客户端判断网关信息
@@ -142,9 +144,47 @@ public class NetAuthenticationHelper extends IThread {
                 }
             }
             //客户端判断 Restricted Cone NAT还是Port Restricted Cone NAT
-
+            if (tag == Command.UDPAuthentication.check_restricted_nat){
+                //使用另外一个端口回应
+                byteBuffer.clear();
+                byteBuffer.put(Command.UDPAuthentication.check_restricted_nat_resp);
+                byteBuffer.flip();
+                channel2.send(byteBuffer,socketAddress);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
+    /**
+     * 检测UDP认证服务器的辅助服务器心跳是否过期
+     */
+    private class CheckAuxiliary extends Thread{
+        public volatile long updateTime ;
+        private final long timeSun = 1000 * 10;
+        public CheckAuxiliary() {
+            this.start();
+        }
+
+        @Override
+        public void run() {
+            while (isRun){
+                if ( (System.currentTimeMillis() - updateTime) >=  timeSun){
+                    if (remoteUdpServer!=null){
+                        remoteUdpServer = null;
+                        LOG.I("UDP认证辅助服务器断开连接 .");
+                    }
+                }
+                synchronized (this){
+                    try {
+                        this.wait(timeSun);
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
+        }
+    }
+
+
 }
