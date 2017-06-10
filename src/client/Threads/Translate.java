@@ -12,14 +12,14 @@ import java.nio.channels.DatagramChannel;
  * 传输数据对象
  */
 public class Translate {
-    public static final int HOLDER_CLIENT_A = 0;
-    public static final int HOLDER_CLIENT_B = 1;
+    public static final int HOLDER_CLIENT_UP = 0;
+    public static final int HOLDER_CLIENT_DOWN = 1;
     //
     private int holderType;
     //物理地址
     private byte[] mac;
     //本地address
-    private InetSocketAddress localSokcet;
+    private InetSocketAddress localSocket;
     //服务器address
     private InetSocketAddress serverSocket;
     //对方客户端地址
@@ -29,7 +29,10 @@ public class Translate {
     private SerializeSource resource;
     //数据
     private ByteBuffer buffer;
-
+    //传输模式
+    private int mode;
+    //是否可以传输
+    private boolean connectSuccess;
 
     public Translate(int holderType) {
         this.holderType = holderType;
@@ -38,8 +41,9 @@ public class Translate {
     public int getHolderType(){
         return holderType;
     }
+
     public String getHolderTypeName(){
-        return holderType==HOLDER_CLIENT_A?"客户端A # ":holderType==HOLDER_CLIENT_B?"客户端B # ":"无";
+        return holderType==HOLDER_CLIENT_UP?"客户端-上传资源 # ":holderType==HOLDER_CLIENT_DOWN?"客户端-下载资源 # ":"无";
     }
 
     public byte[] getMac() {
@@ -50,12 +54,12 @@ public class Translate {
         this.mac = mac;
     }
 
-    public InetSocketAddress getLocalSokcet() {
-        return localSokcet;
+    public InetSocketAddress getLocalSocket() {
+        return localSocket;
     }
 
-    public void setLocalSokcet(InetSocketAddress localSokcet) {
-        this.localSokcet = localSokcet;
+    public void setLocalSocket(InetSocketAddress localSocket) {
+        this.localSocket = localSocket;
     }
 
     public InetSocketAddress getServerSocket() {
@@ -98,6 +102,14 @@ public class Translate {
         this.resource = resource;
     }
 
+    public int getMode() {
+        return mode;
+    }
+
+    public void setMode(int mode) {
+        this.mode = mode;
+    }
+
     //向指定地址发送消息
     public void sendMessageToTarget(ByteBuffer buf,InetSocketAddress address,DatagramChannel channel) throws IOException {
         if (buf!=null && buf.limit()>0 && address!=null && channel!=null){
@@ -113,5 +125,16 @@ public class Translate {
                 setServerSocket(newServerAddress);
             }
         }
+    }
+
+    public void start() {
+        if (holderType==HOLDER_CLIENT_UP) new TClientUp(this);
+        else if (holderType == HOLDER_CLIENT_DOWN) new TClientLoad(this);
+    }
+    public void setConnectSuccess(){
+        connectSuccess = true;
+    }
+    public boolean isConnectSuccess() {
+        return connectSuccess;
     }
 }

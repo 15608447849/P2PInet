@@ -1,16 +1,20 @@
 package client.Threads;
 
+import client.obj.SerializeConnectTask;
 import protocol.Command;
+import protocol.Parse;
 import utils.LOG;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
 /**
  * Created by user on 2017/6/6.
+ *  客户端文件上传
  */
-public class ClientB extends TranslateThread {
-    public ClientB(Translate translate) {
+public class TClientUp extends TranslateThread {
+    public TClientUp(Translate translate) {
         super(translate);
         start();
     }
@@ -27,15 +31,6 @@ public class ClientB extends TranslateThread {
         super.sendMessageToServer();
     }
 
-    @Override
-    boolean onServerMessage(InetSocketAddress socketAddress,ByteBuffer byteBuffer) {
-        byte resultCommand = byteBuffer.get(0);
-        if (resultCommand == Command.Server.udpServerReceiveHeartbeatSuccess){
-                LOG.I(TAG+"收到服务器的心跳回执.");
-                return false;
-        }
-        return true;
-    }
 
 
     @Override
@@ -45,13 +40,30 @@ public class ClientB extends TranslateThread {
     }
 
     @Override
-    void tanslateData() throws Exception {
-
+    void translateData() throws Exception {
+        LOG.I(TAG+ "数据传输....");
     }
 
-    @Override
-    void closeChannel() throws Exception {
 
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

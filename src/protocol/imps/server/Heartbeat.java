@@ -1,6 +1,6 @@
 package protocol.imps.server;
 
-import protocol.Excute;
+import protocol.Execute;
 import protocol.Intent;
 import protocol.Parse;
 import server.obj.CLI;
@@ -10,7 +10,7 @@ import server.obj.IParameter;
  * Created by user on 2017/6/1.
  * 客户端TCP心跳
  */
-public class Heartbeat implements Excute.IAction {
+public class Heartbeat implements Execute.IAction {
     @Override
     public void action(Intent intent) {
         try {

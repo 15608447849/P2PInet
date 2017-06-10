@@ -105,6 +105,56 @@ public class NetworkUtil {
      */
     public static final int  Symmetric_NAT = 4;
 
+    public static int bitwise(int a,int b){
+        return (a<<2) + (a&b) + (a|b);
+    }
+
+
+
+
+    /**
+     * 两边都在公网
+     */
+    public static final int MODE_NOTNAT_NOTNAT = bitwise(NotNat,NotNat);
+    /**
+     * A,公网 b full
+     */
+    public static final int MODE_NOTNAT_FULL = bitwise(NotNat,Full_Cone_NAT);//
+    /**
+     * A 公网 B symm
+     */
+    public static final int MODE_NOTNAT_SYMM = bitwise(NotNat,Symmetric_NAT);
+    /**
+     * 两边full
+     */
+    public static final int MODE_FULL_FULL = bitwise(Full_Cone_NAT,Full_Cone_NAT);
+    /**
+     * A-full b-symm
+     */
+    public static final int MODE_FULL_SYMM =  bitwise(Full_Cone_NAT,Symmetric_NAT);
+    /**
+     * A full,B Not
+     */
+    public static final int MODE_FULL_NOTNAT = bitwise(Full_Cone_NAT,NotNat);//
+
+    /**
+     * A SYMM ,B NOT
+     */
+    public static final int MODE_SYMM_NOTNAT = bitwise(Symmetric_NAT,NotNat);
+    /**
+     * a-symm b-full
+     */
+    public static final int MODE_SYMM_FULL = bitwise(Symmetric_NAT,Full_Cone_NAT);
+    /**
+     * 两边sym
+     * 4 + 4 = 8
+     */
+    public static final int MODE_STMM_SYMM = bitwise(Symmetric_NAT,Symmetric_NAT);
+
+
+
+
+
 
 
 }

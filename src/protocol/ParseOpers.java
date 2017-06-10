@@ -26,21 +26,18 @@ public class ParseOpers {
             synchronizedSource(map,data);
         }
         //服务器下发资源信息
-        if (protocol == Command.Server.trunSynchronizationSource){
+        if (protocol == Command.Server.turnSynchronizationSource){
             turnSynchronizationSource(map,data);
         }
         //资源需求客户端 请求 服务器 建立与 资源源 的连接
         if (protocol == Command.Client.connectSourceClient){
             connectSourceClient(map,data);
         }
-        //资源源 收到服务器发送的 UDP端口信息,建立连接
-        if (protocol == Command.Server.queryConnectUdp_source){
-            queryConnectUdp_source(map,data);
+        //收到服务器发送的 UDP端口信息,建立连接
+        if (protocol == Command.Server.queryClientConnectUDPService){
+            queryClientConnectUDPService(map,data);
         }
-        //索求资源客户端 收到 服务器发来 的 udp连接请求,建立UDP连接
-        if (protocol == Command.Server.queryConnectUdp_der){
-            queryConnectUdp_der(map,data);
-        }
+
     }
 
     /**
@@ -61,17 +58,12 @@ public class ParseOpers {
         map.put(_macBytes, macBytes);
         map.put(_natTypeBytes,natTypeBytes);
     }
-    /**
-     * 索求资源客户端收到服务器的连接请求
-     */
-    private static void queryConnectUdp_der(HashMap<String, Object> map, byte[] data) {
-        map.put(_connectTaskBytes,data);
-    }
+
 
     /**
-     * 资源客户端收到服务器的连接请求
+     * 客户端收到服务器的连接请求
      */
-    private static void queryConnectUdp_source(HashMap<String, Object> map, byte[] data) {
+    private static void queryClientConnectUDPService(HashMap<String, Object> map, byte[] data) {
         map.put(_connectTaskBytes,data);
     }
 

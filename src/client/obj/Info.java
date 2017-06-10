@@ -51,7 +51,9 @@ public class Info {
     public byte[] getLocalMac() {
         return localMac;
     }
-
+    public String getLocalString(){
+        return NetworkUtil.macByte2String(localMac);
+    }
 
     public boolean isNatAuthentic() {
         return natType== NotNat || natType ==Full_Cone_NAT || natType ==  Restricted_Cone_NAT|| natType == Port_Restricted_Cone_NAT || natType== Symmetric_NAT;

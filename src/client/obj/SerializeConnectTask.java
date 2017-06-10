@@ -14,12 +14,12 @@ import java.net.UnknownHostException;
  */
 public class SerializeConnectTask implements Serializable {
     byte[] requestHostMac;//请求资源的主机地址
-    byte[] source;//请求得资源 ->包含资源发起者
+    private SerializeSource source;//请求得资源 ->包含资源发起者
     /**
      * 服务器udp临时端口 - 服务器完成
      */
     private byte[] serverTempUDPIp;
-    int serverTempUDPPort = 0;
+    private int serverTempUDPPort = 0;
 
     /**
      * 资源源的NET信息 - 服务器填写
@@ -34,12 +34,13 @@ public class SerializeConnectTask implements Serializable {
 
     /**
      * 1 服务器临时端口完成
-     * 2 源主机成功连接服务器临时端口
-     * 3 目标主机成功连接临时端口
-     *
+     * 3 设置了源,目的地.
+     * 5 两边客户端都收到服务器的命令
      */
     private int complete = 0;
-    public SerializeConnectTask( byte[] source) {
+
+
+    public SerializeConnectTask( SerializeSource source) {
         this.source = source;
     }
     public void setRequestHostMac(byte[] requestHostMac){
@@ -53,17 +54,24 @@ public class SerializeConnectTask implements Serializable {
         return new InetSocketAddress(InetAddress.getByAddress(serverTempUDPIp),serverTempUDPPort);
     }
     //源
-    public void setSrcNET(byte[] ip,int port){
-        this.srcUDPIp = ip;
-        this.srcUDPPort = port;
+    public void setSrcNET(InetSocketAddress address){
+        if (complete<3 && srcUDPIp == null){
+            this.srcUDPIp = address.getAddress().getAddress();
+            this.srcUDPPort = address.getPort();
+            complete++;
+        }
+
     }
     public InetSocketAddress getSrcNET() throws UnknownHostException {
         return new InetSocketAddress(InetAddress.getByAddress(srcUDPIp),srcUDPPort);
     }
     //目标
-    public void setDesNET(byte[] ip,int port){
-        this.desUDPIp = ip;
-        this.desUDPPort = port;
+    public void setDesNET(InetSocketAddress address){
+        if (complete<3 && desUDPIp == null){
+            this.desUDPIp = address.getAddress().getAddress();
+            this.desUDPPort =  address.getPort();
+            complete++;
+        }
     }
     public InetSocketAddress getDesNet() throws UnknownHostException{
         return new InetSocketAddress(InetAddress.getByAddress(desUDPIp),desUDPPort);
@@ -80,11 +88,11 @@ public class SerializeConnectTask implements Serializable {
         return NetworkUtil.macByte2String(requestHostMac);
     }
 
-    public String getDestinationMac() throws IOException, ClassNotFoundException {
+    public String getDestinationMac(){
         return NetworkUtil.macByte2String(getSource().getInitiatorMacAddress());
     }
-    public SerializeSource getSource() throws IOException, ClassNotFoundException {
+    public SerializeSource getSource(){
 
-        return (SerializeSource)Parse.bytes2Sobj(source);
+        return source;
     }
 }

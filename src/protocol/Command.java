@@ -30,20 +30,6 @@ public class Command {
          * {命令3,数据长度,connectTask对象}
          */
         public static final byte connectSourceClient = 3;
-
-        /**
-         * UDP
-         * 资源源 发送心跳
-         */
-        public static final byte udpHeartbeat = 30;
-        /**
-         * 客户端A->B
-         */
-        public static final byte clientAshakePackage = 31;
-        /**
-         * 客户端B->A
-         */
-        public static final byte clienBshakePackage = 32;
         /**
          * 认证
          */
@@ -58,29 +44,15 @@ public class Command {
          * 通知认证NET类型
          */
         public static final byte authenticationNetType = 100;
-
-
         /**
          * 转发资源同步请求
          *  {命令101,长度,资源需求主机MAC,资源名} -> 除这个mac之外的所有客户端
          */
-        public static final byte trunSynchronizationSource = 101;
+        public static final byte turnSynchronizationSource = 101;
         /**
-         * 请求资源源连接
+         * 请求客户端连接
          */
-        public static final byte queryConnectUdp_source = 102;
-        /**
-         * 请求目的客户端连接
-         */
-        public static final byte queryConnectUdp_der = 103;
-        /**
-         * 收到 源客户端 udp 心跳回执
-         */
-        public static final byte udpServerReceiveHeartbeatSuccess = 110;
-        /**
-         * 发送给 源客户端 ,目标客户端NET信息
-         */
-        public static final byte udpSourceDestNetAddress = 111;
+        public static final byte queryClientConnectUDPService = 102;
     }
 
 
@@ -95,7 +67,26 @@ public class Command {
         public static final byte udp_auxiliaty = 70;
         //udp检测 - 转发消息到 辅助服务器
         public static final byte turn_full_cone_check = 71;
+    }
 
+    public static class UDPTranslate{
+        /**
+         * 客户端发送心跳 - 包含客户端mac
+         */
+        public static final byte udpHeartbeat = 30;
+        /**
+         * 服务器回应
+         */
+        public static final byte serverHeartbeatResp = 31;
+        /**
+         * 客户端接受到服务器命令的回应
+         */
+        public static final byte clientReceiveResp = 32;
+        /**
+         * 客户端之间的握手包
+         */
+        public static final byte shakePackage = 33;
+        public static final byte shakePackage_resp = 34;
     }
 
 }

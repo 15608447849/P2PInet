@@ -1,12 +1,9 @@
 package protocol.imps.server;
 
 import client.obj.SerializeConnectTask;
-import client.obj.SerializeSource;
-import client.socketimp.SocketManager;
-import protocol.Excute;
+import protocol.Execute;
 import protocol.Intent;
 import protocol.Parse;
-import server.abs.IThread;
 import server.abs.IThreadInterface;
 import utils.LOG;
 
@@ -17,7 +14,7 @@ import java.util.HashMap;
  * 客户端发起的搭桥请求
  * {connectTask对象}
  */
-public class ConnectSourceClient implements Excute.IAction {
+public class ConnectSourceClient implements Execute.IAction {
     @Override
     public void action(Intent intent) {
         try {

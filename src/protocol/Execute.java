@@ -3,7 +3,6 @@ package protocol;
 import client.socketimp.SocketManager;
 import server.obj.CLI;
 import utils.ClazzUtil;
-import utils.LOG;
 
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -11,7 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Created by user on 2017/6/1.
  */
-public class Excute {
+public class Execute {
     protected static final String clsPrefix = "protocol.imps.";
     private static final String motherName = "action";
     private static final Class[] classType = new Class[]{Intent.class};
@@ -41,21 +40,20 @@ public class Excute {
     /**
      * 客户端处理命令
      */
-    static class Client extends Excute{
+    static class Client extends Execute {
         private static final String suffix = "client.";
         private Client(){
             //认证net类型
             map.put(Command.Server.authenticationNetType,clsPrefix+suffix+"AuthenticationNet");
             //服务器下发同步资源
-            map.put(Command.Server.trunSynchronizationSource,clsPrefix+suffix+"TurnSynchronizationSource");//服务器下发资源
-            //资源客户端收到 服务器的UDP连接请求
-            map.put(Command.Server.queryConnectUdp_source,clsPrefix+suffix+"QueryConnectUdp_source");
-            //索求资源客户端收到服务器的udo连接请求
-            map.put(Command.Server.queryConnectUdp_der,clsPrefix+suffix+"QueryConnectUdp_der");
+            map.put(Command.Server.turnSynchronizationSource,clsPrefix+suffix+"TurnSynchronizationSource");
+            //客户端收到 服务器的UDP连接请求
+            map.put(Command.Server.queryClientConnectUDPService,clsPrefix+suffix+"queryClientConnectUDPService");
+
 //            LOG.I("客户端处理指令集合:"+map);
         }
        private static class Holder{
-           private static Client instance = new Excute.Client();
+           private static Client instance = new Execute.Client();
        }
         public static Client get(){
            return Holder.instance;
@@ -65,7 +63,7 @@ public class Excute {
     /**
      *服务端处理命令
      */
-     static class Server extends Excute{
+     static class Server extends Execute {
          private static final String suffix = "server.";
         private Server(){
             map.put(Command.Client.authenticationSucceed,clsPrefix+suffix+"AuthenticationSucceed");//tcp心跳
@@ -75,7 +73,7 @@ public class Excute {
 //            LOG.I("服务器处理指令集合:"+map);
         }
         private static class Holder{
-            private static Server instance = new Excute.Server();
+            private static Server instance = new Execute.Server();
         }
         public static Server get(){
             return Holder.instance;
@@ -113,7 +111,7 @@ public class Excute {
         intent.putCommand(command);
         intent.putMap(map);
         intent.putSocketManager(socketManager);
-        return Excute.Client.get().obtain(intent);
+        return Execute.Client.get().obtain(intent);
     }
 
     /**
@@ -129,7 +127,7 @@ public class Excute {
         Intent intent = client.getIntent();
             intent.putCommand(command);
             intent.putMap(map);
-        return Excute.Server.get().obtain(intent);
+        return Execute.Server.get().obtain(intent);
     }
 
 

@@ -1,5 +1,5 @@
 package server.obj;
-import protocol.Excute;
+import protocol.Execute;
 import protocol.Intent;
 import protocol.Parse;
 import server.abs.IOperate;
@@ -277,7 +277,7 @@ public class CLI extends Thread implements CompletionHandler<Integer,ByteBuffer>
 
     private boolean handlerMessage(HashMap<String, Object> map) {
         if (map==null) return false;
-        return Excute.handlerMessage(Excute.SERVER,new Object[]{map,this});
+        return Execute.handlerMessage(Execute.SERVER,new Object[]{map,this});
     }
 
     public Intent getIntent() {

@@ -43,7 +43,7 @@ public class CLIWrite {
                int len = source.length;
                byte[] lengthBytes = Parse.int2bytes(len);
                ByteBuffer buff = ByteBuffer.allocate(1+lengthBytes.length+len);
-                buff.put(Command.Server.trunSynchronizationSource);//命令
+                buff.put(Command.Server.turnSynchronizationSource);//命令
                 buff.put(lengthBytes);//长度
                 buff.put(source);//资源信息序列化对象
                 buff.flip();

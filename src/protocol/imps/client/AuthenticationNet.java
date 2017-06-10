@@ -2,21 +2,17 @@ package protocol.imps.client;
 
 import client.Threads.AuthenticationThread;
 import client.socketimp.SocketManager;
-import protocol.Command;
-import protocol.Excute;
+import protocol.Execute;
 import protocol.Intent;
 import protocol.Parse;
-import utils.LOG;
-import utils.MD5Util;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 /**
  * Created by user on 2017/6/8.
  */
-public class AuthenticationNet implements Excute.IAction {
+public class AuthenticationNet implements Execute.IAction {
     @Override
     public void action(Intent intent) {
         SocketManager manager = intent.getSourceManager();

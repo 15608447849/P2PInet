@@ -1,14 +1,9 @@
 package client.socketimp;
 
-import protocol.Command;
-import protocol.Excute;
+import protocol.Execute;
 import protocol.Parse;
-import utils.LOG;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.util.HashMap;
 
@@ -46,7 +41,7 @@ public class SocketHandler extends Thread implements CompletionHandler<Integer, 
     //处理消息
     private boolean handlerMessage(HashMap<String, Object> map) {
         if (map==null) return false;
-        return Excute.handlerMessage(Excute.CLIENT,new Object[]{map,manager});
+        return Execute.handlerMessage(Execute.CLIENT,new Object[]{map,manager});
     }
 
     @Override

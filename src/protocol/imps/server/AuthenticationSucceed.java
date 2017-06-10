@@ -1,7 +1,6 @@
 package protocol.imps.server;
 
-import protocol.Command;
-import protocol.Excute;
+import protocol.Execute;
 import protocol.Intent;
 import protocol.Parse;
 import utils.LOG;
@@ -10,7 +9,7 @@ import utils.LOG;
  * Created by user on 2017/6/8.
  * 客户端认证成功
  */
-public class AuthenticationSucceed implements Excute.IAction {
+public class AuthenticationSucceed implements Execute.IAction {
     @Override
     public void action(Intent intent) {
         try {
