@@ -163,26 +163,7 @@ public abstract class TranslateThread extends Thread{
                         buffer.clear();
                         buffer.put(Command.UDPTranslate.shakePackage_resp);
                         buffer.flip();
-                        translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
-                        synchronized (this){
-                            this.wait(100);
-                        }
-                        buffer.rewind();
-                        translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
-                        synchronized (this){
-                            this.wait(100);
-                        }
-                        buffer.rewind();
-                        translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
-                        synchronized (this){
-                            this.wait(100);
-                        }
-                        buffer.rewind();
-                        translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
-                        synchronized (this){
-                            this.wait(100);
-                        }
-                        buffer.rewind();
+
                         translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
                         LOG.I(TAG+"收到对端信息, " +terminal +" ,已发送握手回执.进入数据传输. "+translate.getTerminalSocket() +" - "+buffer);
                         translate.setConnectSuccess();
