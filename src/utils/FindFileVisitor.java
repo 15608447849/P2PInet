@@ -19,7 +19,9 @@ public class FindFileVisitor extends SimpleFileVisitor<Path> {
     public FindFileVisitor(String homeDir) {
        this.homeDir = Paths.get(homeDir);
     }
-
+    public Path getHomePath(){
+        return homeDir;
+    }
     public FindFileVisitor setQuerySource(SerializeSource source){
         this.source = source;
         return this;

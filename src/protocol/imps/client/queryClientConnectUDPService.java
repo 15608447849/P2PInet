@@ -55,6 +55,7 @@ public class queryClientConnectUDPService implements Execute.IAction {
             translate.setMac(manager.info.getLocalMac());
             translate.setLocalSocket(localSocket);
             translate.setServerSocket(serverSocket);
+            translate.setSourceManager(manager.sourceManager);
             translate.start();
             //结束
         } catch (Exception e) {

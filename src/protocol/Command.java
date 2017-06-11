@@ -91,7 +91,14 @@ public class Command {
          * 客户端之间的握手包
          */
         public static final byte shakePackage = 33;
+        /**
+         * 握手回执
+         */
         public static final byte shakePackage_resp = 34;
+        /**
+         * 开始传递数据
+         */
+        public static final byte resourceUpload = 35;
     }
 
 }

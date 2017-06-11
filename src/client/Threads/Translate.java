@@ -1,6 +1,7 @@
 package client.Threads;
 
 import client.obj.SerializeSource;
+import client.sourceimp.SourceManager;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -33,6 +34,9 @@ public class Translate {
     private int mode;
     //是否可以传输
     private boolean connectSuccess;
+    //资源管理器
+    private SourceManager sourceManager;
+
 
     public Translate(int holderType) {
         this.holderType = holderType;
@@ -108,6 +112,14 @@ public class Translate {
 
     public void setMode(int mode) {
         this.mode = mode;
+    }
+
+    public SourceManager getSourceManager() {
+        return sourceManager;
+    }
+
+    public void setSourceManager(SourceManager sourceManager) {
+        this.sourceManager = sourceManager;
     }
 
     //向指定地址发送消息

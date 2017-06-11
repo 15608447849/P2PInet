@@ -5,6 +5,7 @@ import client.obj.SerializeSource;
 import utils.FindFileVisitor;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +35,10 @@ public class SourceManager {
             lock.unlock();
         }
 
+    }
+
+    public Path getHome() {
+        return fonder.getHomePath();
     }
 
 //    public boolean add(SerializeSource task){
