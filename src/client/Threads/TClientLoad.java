@@ -48,7 +48,8 @@ public class TClientLoad extends TranslateThread {
         LOG.I(TAG+ "数据下载....");
             //创建临时文件
         Path dirPath = translate.getSourceManager().getHome();
-        String temFilePath = translate.getResource().getPosition()+".tmp";
+        String filePath = translate.getResource().getPosition();
+        String temFilePath = filePath+".tmp";
         File temp = new File(dirPath+temFilePath);
         if (!temp.exists()){
             temp.createNewFile();
@@ -75,6 +76,8 @@ public class TClientLoad extends TranslateThread {
             }
         }
         outChannel.close();
+        temp.renameTo(new File(filePath));
+        LOG.I("传输完成: "+ filePath);
     }
 
 
