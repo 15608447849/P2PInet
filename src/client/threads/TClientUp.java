@@ -77,7 +77,7 @@ public class TClientUp extends TranslateThread {
                 }
             }
         });
-
+        upload.start();
         synchronized (upload){
             upload.wait();
         }

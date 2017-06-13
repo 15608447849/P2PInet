@@ -88,7 +88,7 @@ public class TClientLoad extends TranslateThread {
                 }
             }
         });
-
+        download.start();
         synchronized (download){
             download.wait();
         }
