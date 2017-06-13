@@ -33,8 +33,10 @@ public class DataUpload extends DataImp{
                  element.buf2.flip();
                 cmd = element.buf2.get(0);
                 if ( cmd == Command.UDPTranslate.resourceUpload){
-                    LOG.I("收到数据上传命令.");
-                    return true;
+                    LOG.I("收到数据上传命令. - "+ address + " - client: "+ element.toAddress);
+//                    return true;
+                    //回应
+                    element.channel.send(element.buf2,address);
                 }
             }else{
                 sleep(overTime);
@@ -95,13 +97,16 @@ public class DataUpload extends DataImp{
                     sendbuf.rewind();
                 }
 
+//                LOG.I("发送:"+sendbuf + element.toAddress);
                 //写入
                 channel.send(sendbuf,element.toAddress);
 
                 //接收回执
                 recvbuf.clear();
-                if (channel.receive(recvbuf)!=null){
+                SocketAddress address = channel.receive(recvbuf);
+                if (address!=null){
                     recvbuf.flip();
+                    LOG.I("收到:"+address+" - >"+recvbuf);
                     if (recvbuf.limit()== 8 && recvbuf.getLong() == sendCount){
                         if (fileSzie == position){
                             sendCount= -1L; //退出 - 通知下载,传输完毕,   如果对方不需要重传,则超时等待结束. 如果对方需要重传, 传送 sendCount++; 自动重传.
@@ -116,7 +121,8 @@ public class DataUpload extends DataImp{
                         TimeUnit.MICROSECONDS.sleep(overTime * 100);
                     } catch (InterruptedException e) {
                     }
-//                    overTimeCount++;
+                    overTimeCount++;
+                    overTimeCount=2;
                     if (overTimeCount==OVER_MAX) return false;
                 }
             }
