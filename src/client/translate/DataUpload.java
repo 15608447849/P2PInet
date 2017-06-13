@@ -50,6 +50,7 @@ public class DataUpload extends DataImp{
     @Override
     protected boolean translateUp() {
 
+        LOG.I("上传数据中.");
         overTimeCount = OVER_INIT;
         position = 0L;
         sendCount=0L;
@@ -83,6 +84,7 @@ public class DataUpload extends DataImp{
                             e.printStackTrace();
                             readLength = 0L;
                         }
+                        LOG.I("次数: "+ sendCount+" position == "+ position);
                         if (readLength!=0){
                             position+=readLength;
                         }
@@ -114,7 +116,7 @@ public class DataUpload extends DataImp{
                         TimeUnit.MICROSECONDS.sleep(overTime * 100);
                     } catch (InterruptedException e) {
                     }
-                    overTimeCount++;
+//                    overTimeCount++;
                     if (overTimeCount==OVER_MAX) return false;
                 }
             }

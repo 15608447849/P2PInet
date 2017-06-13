@@ -31,6 +31,7 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
                 element.buf2.rewind();
                 element.channel.send(element.buf2,element.toAddress);
             }
+            LOG.I("发送上传通知.");
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -40,6 +41,7 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
 
     @Override
     protected boolean translateDown() {
+        LOG.I("等待接收中.");
         overTimeCount = OVER_INIT;
         position = 0L;
         recvCount=0L;//接收
@@ -83,7 +85,7 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
                     overTimeCount=OVER_INIT;
                 }
                 else{
-                    overTimeCount++;
+//                    overTimeCount++;
                     synchronized (this){
                         this.wait(overTime);
                     }
@@ -103,7 +105,7 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
 
     @Override
     public void completed(Integer integer, Void aVoid) {
-
+        LOG.I(integer+" ");
     }
 
     @Override
