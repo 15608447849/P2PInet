@@ -24,6 +24,7 @@ public class DataUpload extends DataImp{
     protected boolean waitLoaderNotify() {
         overTimeCount = OVER_INIT;
         LOG.I("等待上传命令中...");
+        int count = 0;
         while (overTimeCount< OVER_MAX){
             try {
             element.buf2.clear();
@@ -36,8 +37,9 @@ public class DataUpload extends DataImp{
                     LOG.I("收到数据上传命令. - "+ address + " - client: "+ element.toAddress);
                     //回应
                     element.channel.send(element.buf2,address);
-//                   return true;
                     overTimeCount=OVER_INIT;
+                    count++;
+                    if (count==10) return true;
                 }
             }else{
                 sleep(overTime);

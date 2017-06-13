@@ -29,7 +29,8 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
             element.buf2.put(Command.UDPTranslate.resourceUpload);
             element.buf2.flip();
 
-    while (true){
+            int count = 0;
+    while (count>10){
             element.buf2.rewind();
             element.channel.send(element.buf2, element.toAddress);
             LOG.I("发送上传通知.");
@@ -38,15 +39,11 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
             if (address != null) {
                 element.buf1.flip();
                 LOG.I("收到上传通知回应. " + address+" - "+ element.buf1);
-//                break;
-                try {
-                    sleep(1000);
-                } catch (InterruptedException e) {
-                }
+                count++;
             }
         }
             //等待应答
-//            return true;
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -55,6 +52,15 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
 
     @Override
     protected boolean translateDown() {
+
+        try {
+            synchronized (this){
+                this.wait(1000);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         LOG.I("等待接收中.");
         overTimeCount = OVER_INIT;
         position = 0L;
@@ -70,8 +76,8 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
             while (channel.isOpen() && overTimeCount<OVER_MAX){
                 buffer = ByteBuffer.allocate(Parse.buffSize);
                 buffer.clear();
-
-                if (  (channel.receive(buffer) )!= null){
+                SocketAddress address = channel.receive(buffer);
+                if (  address != null){
                     buffer.flip();
                     //数据分析:
                     sendCount = buffer.getLong();
