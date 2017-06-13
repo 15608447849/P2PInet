@@ -53,7 +53,7 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
             AsynchronousFileChannel.open(element.downloadFileTemp, StandardOpenOption.WRITE);
             ByteBuffer buffer;
             //开始接收
-            while (channel.isOpen() && channel.isConnected() && overTimeCount<OVER_MAX){
+            while (channel.isOpen() && overTimeCount<OVER_MAX){
                 buffer = ByteBuffer.allocate(element.buf1.capacity());
                 buffer.clear();
 

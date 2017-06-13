@@ -68,7 +68,7 @@ public class DataUpload extends DataImp{
             fileChannel = AsynchronousFileChannel.open(element.uploadFilePath, StandardOpenOption.READ);
             //开始写入
 
-            while (channel.isOpen() && channel.isConnected() && overTimeCount<OVER_MAX){
+            while (channel.isOpen() && overTimeCount<OVER_MAX){
 
                 if (overTimeCount==OVER_INIT){ //读取本地文件
                     sendbuf.clear();
