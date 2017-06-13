@@ -1,7 +1,6 @@
 package client.threads;
 
-import client.translate.DataDownload;
-import client.translate.DataElement;
+import client.translate.*;
 import protocol.Command;
 import utils.LOG;
 
@@ -64,10 +63,34 @@ public class TClientLoad extends TranslateThread {
             element.downloadFileTemp = Paths.get(temFilePath);
             element.downloadFile = Paths.get(filePath);
             element.downloadFileMD5 = translate.getResource().getMd5Hash();
-        new DataDownload(element).start();
+        final DataImp download =  new DataUpload(element);
+        download.setAction(new TranslateAction() {
+            @Override
+            public void connectSuccess(DataElement element) {
+                LOG.I("连接成功 - "+ element.downloadFileTemp);
+            }
 
-        synchronized (this){
-            this.wait();
+            @Override
+            public void translateSuccess(DataElement element) {
+                LOG.I("传输成功 - "+ element);
+            }
+
+            @Override
+            public void error(Exception e) {
+                LOG.I("传输错误 - "+ e);
+            }
+
+            @Override
+            public void onOver(DataElement element) {
+                LOG.I("传输完成 - "+ element);
+                synchronized (download){
+                    download.notify();
+                }
+            }
+        });
+
+        synchronized (download){
+            download.wait();
         }
     }
 

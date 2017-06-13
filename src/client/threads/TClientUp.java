@@ -1,7 +1,9 @@
 package client.threads;
 
 import client.translate.DataElement;
+import client.translate.DataImp;
 import client.translate.DataUpload;
+import client.translate.TranslateAction;
 import utils.LOG;
 
 import java.nio.ByteBuffer;
@@ -49,10 +51,37 @@ public class TClientUp extends TranslateThread {
              String filePath = translate.getSourceManager().getHome()+translate.getResource().getPosition();
             element.uploadFilePath = Paths.get(filePath);
             element.uploadFileMD5 = translate.getResource().getMd5Hash();
-        new DataUpload(element).start();
-        synchronized (this){
-            this.wait();
+
+        final DataImp upload =  new DataUpload(element);
+        upload.setAction(new TranslateAction() {
+            @Override
+            public void connectSuccess(DataElement element) {
+                LOG.I("连接成功 - "+ element.uploadFilePath);
+            }
+
+            @Override
+            public void translateSuccess(DataElement element) {
+                LOG.I("传输成功 - "+ element);
+            }
+
+            @Override
+            public void error(Exception e) {
+                LOG.I("传输错误 - "+ e);
+            }
+
+            @Override
+            public void onOver(DataElement element) {
+                LOG.I("传输完成 - "+ element);
+                synchronized (upload){
+                    upload.notify();
+                }
+            }
+        });
+
+        synchronized (upload){
+            upload.wait();
         }
+
     }
 
 
