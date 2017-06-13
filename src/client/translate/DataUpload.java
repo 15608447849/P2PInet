@@ -39,7 +39,7 @@ public class DataUpload extends DataImp{
                     element.channel.send(element.buf2,address);
                     overTimeCount=OVER_INIT;
                     count++;
-                    if (count==10) return true;
+                    if (count>10) return true;
                 }
             }else{
                 sleep(overTime);
