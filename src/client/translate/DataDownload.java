@@ -1,6 +1,7 @@
 package client.translate;
 
 import protocol.Command;
+import protocol.Parse;
 import utils.LOG;
 import utils.MD5Util;
 
@@ -28,19 +29,24 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
             element.buf2.put(Command.UDPTranslate.resourceUpload);
             element.buf2.flip();
 
-while (true){
+    while (true){
             element.buf2.rewind();
             element.channel.send(element.buf2, element.toAddress);
             LOG.I("发送上传通知.");
             element.buf1.clear();
             SocketAddress address = element.channel.receive(element.buf1);
             if (address != null) {
-                LOG.I("收到上传通知回应. " + address);
-                break;
+                element.buf1.flip();
+                LOG.I("收到上传通知回应. " + address+" - "+ element.buf1);
+//                break;
+                try {
+                    sleep(1000);
+                } catch (InterruptedException e) {
+                }
             }
         }
             //等待应答
-            return true;
+//            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -62,7 +68,7 @@ while (true){
             ByteBuffer buffer;
             //开始接收
             while (channel.isOpen() && overTimeCount<OVER_MAX){
-                buffer = ByteBuffer.allocate(element.buf1.capacity());
+                buffer = ByteBuffer.allocate(Parse.buffSize);
                 buffer.clear();
 
                 if (  (channel.receive(buffer) )!= null){

@@ -34,9 +34,10 @@ public class DataUpload extends DataImp{
                 cmd = element.buf2.get(0);
                 if ( cmd == Command.UDPTranslate.resourceUpload){
                     LOG.I("收到数据上传命令. - "+ address + " - client: "+ element.toAddress);
-//                    return true;
                     //回应
                     element.channel.send(element.buf2,address);
+//                   return true;
+                    overTimeCount=OVER_INIT;
                 }
             }else{
                 sleep(overTime);
@@ -86,7 +87,7 @@ public class DataUpload extends DataImp{
                             e.printStackTrace();
                             readLength = 0L;
                         }
-                        LOG.I("次数: "+ sendCount+" position == "+ position);
+                       // LOG.I("次数: "+ sendCount+" position == "+ position);
                         if (readLength!=0){
                             position+=readLength;
                         }
@@ -97,16 +98,16 @@ public class DataUpload extends DataImp{
                     sendbuf.rewind();
                 }
 
-//                LOG.I("发送:"+sendbuf + element.toAddress);
-                //写入
-                channel.send(sendbuf,element.toAddress);
+                    //LOG.I("发送:"+sendbuf + element.toAddress +" - bendi:"+ channel.getLocalAddress());
+                    //写入
+                    channel.send(sendbuf,element.toAddress);
 
                 //接收回执
                 recvbuf.clear();
                 SocketAddress address = channel.receive(recvbuf);
                 if (address!=null){
                     recvbuf.flip();
-                    LOG.I("收到:"+address+" - >"+recvbuf);
+//                    LOG.I("收到:"+address+" - >"+recvbuf);
                     if (recvbuf.limit()== 8 && recvbuf.getLong() == sendCount){
                         if (fileSzie == position){
                             sendCount= -1L; //退出 - 通知下载,传输完毕,   如果对方不需要重传,则超时等待结束. 如果对方需要重传, 传送 sendCount++; 自动重传.
@@ -122,7 +123,6 @@ public class DataUpload extends DataImp{
                     } catch (InterruptedException e) {
                     }
                     overTimeCount++;
-                    overTimeCount=2;
                     if (overTimeCount==OVER_MAX) return false;
                 }
             }
