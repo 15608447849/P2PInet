@@ -65,6 +65,10 @@ public class TClientLoad extends TranslateThread {
             element.downloadFile = Paths.get(filePath);
             element.downloadFileMD5 = translate.getResource().getMd5Hash();
         new DataDownload(element).start();
+
+        synchronized (this){
+            this.wait();
+        }
     }
 
 

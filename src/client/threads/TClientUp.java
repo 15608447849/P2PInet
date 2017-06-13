@@ -50,6 +50,9 @@ public class TClientUp extends TranslateThread {
             element.uploadFilePath = Paths.get(filePath);
             element.uploadFileMD5 = translate.getResource().getMd5Hash();
         new DataUpload(element).start();
+        synchronized (this){
+            this.wait();
+        }
     }
 
 
