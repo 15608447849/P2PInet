@@ -59,7 +59,6 @@ public abstract class DataImp extends Thread{
         }else
         if (element.type == DataElement.DOWNLOAD){
                 //通知开始上传 ->进入数据流接受状态
-            if (notifyUploader()){
                 if (translateDown()){
                     if (action!=null){
                         action.translateSuccess(element);
@@ -69,7 +68,7 @@ public abstract class DataImp extends Thread{
                         action.error(new IllegalStateException("数据传输超时"));
                     }
                 }
-            }
+
         }else{
             if (action!=null){
                 action.error(new IllegalStateException("未知的数据传输元素类型:"+ element.type));
@@ -88,9 +87,7 @@ public abstract class DataImp extends Thread{
         return false;
     }
 
-    protected boolean notifyUploader(){
-        return false;
-    }
+
     protected boolean translateDown(){
         return false;
     }

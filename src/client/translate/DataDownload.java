@@ -21,8 +21,9 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
         super(element);
     }
 
+
     @Override
-    protected boolean notifyUploader() {
+    protected boolean translateDown() {
         try {
             //通知下载
             element.buf2.clear();
@@ -30,28 +31,21 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
             element.buf2.flip();
 
             int count = 0;
-    while (count>10){
-            element.buf2.rewind();
-            element.channel.send(element.buf2, element.toAddress);
-            LOG.I("发送上传通知.");
-            element.buf1.clear();
-            SocketAddress address = element.channel.receive(element.buf1);
-            if (address != null) {
-                element.buf1.flip();
-                LOG.I("收到上传通知回应. " + address+" - "+ element.buf1);
-                count++;
+            while (count>10){
+                element.buf2.rewind();
+                element.channel.send(element.buf2, element.toAddress);
+                LOG.I("发送上传通知.");
+                element.buf1.clear();
+                SocketAddress address = element.channel.receive(element.buf1);
+                if (address != null) {
+                    element.buf1.flip();
+                    LOG.I("收到上传通知回应. " + address+" - "+ element.buf1);
+                    count++;
+                }
             }
-        }
-            //等待应答
-            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return super.notifyUploader();
-    }
-
-    @Override
-    protected boolean translateDown() {
 
         try {
             synchronized (this){
