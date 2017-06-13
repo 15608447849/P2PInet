@@ -5,6 +5,7 @@ import utils.LOG;
 import utils.MD5Util;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
@@ -21,16 +22,14 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
 
     @Override
     protected boolean notifyUploader() {
-
         try {
             //通知下载
             element.buf2.clear();
             element.buf2.put(Command.UDPTranslate.resourceUpload);
             element.buf2.flip();
-
             for (int i= 0;i<3;i++){
                 element.buf2.rewind();
-                element.channel.write(element.buf2);
+                element.channel.send(element.buf2,element.toAddress);
             }
             return true;
         } catch (IOException e) {
@@ -44,11 +43,10 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
         overTimeCount = OVER_INIT;
         position = 0L;
         recvCount=0L;//接收
-
-
         ByteBuffer sendbuf = element.buf2;
         DatagramChannel channel = element.channel;
         AsynchronousFileChannel fileChannel = null;
+
         try{
             AsynchronousFileChannel.open(element.downloadFileTemp, StandardOpenOption.WRITE);
             ByteBuffer buffer;
@@ -56,8 +54,8 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
             while (channel.isOpen() && channel.isConnected() && overTimeCount<OVER_MAX){
                 buffer = ByteBuffer.allocate(element.buf1.capacity());
                 buffer.clear();
-                len = channel.read(buffer);
-                if (len > 0){
+
+                if (  (channel.receive(buffer) )!= null){
                     buffer.flip();
                     //数据分析:
                     sendCount = buffer.getLong();
@@ -81,11 +79,14 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
                     recvCount++;
                     sendbuf.putLong(recvCount);
                     sendbuf.flip();
-                    channel.write(sendbuf);
+                    channel.send(sendbuf,element.toAddress);
                     overTimeCount=OVER_INIT;
                 }
                 else{
                     overTimeCount++;
+                    synchronized (this){
+                        this.wait(overTime);
+                    }
                 }
             }
             closeFileChannel(fileChannel);

@@ -4,6 +4,7 @@ import protocol.Command;
 import utils.LOG;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.DatagramChannel;
@@ -24,15 +25,11 @@ public class DataUpload extends DataImp{
         overTimeCount = OVER_INIT;
         LOG.I("等待上传命令中...");
         while (overTimeCount< OVER_MAX){
-
-            element.buf2.clear();
             try {
-                len = element.channel.write(element.buf2);
-            } catch (IOException e) {
-                e.printStackTrace();
-                len = 0L;
-            }
-            if (len>0){
+            element.buf2.clear();
+            SocketAddress address  = element.channel.receive(element.buf2);
+//                LOG.I("收到数据 - ."+address);
+            if (address != null){
                  element.buf2.flip();
                 cmd = element.buf2.get(0);
                 if ( cmd == Command.UDPTranslate.resourceUpload){
@@ -40,10 +37,10 @@ public class DataUpload extends DataImp{
                     return true;
                 }
             }else{
-                try {
-                   sleep(overTime* 20000);
-                } catch (InterruptedException e) {
-                }
+                sleep(overTime);
+            }
+
+            } catch (Exception e) {
             }
             overTimeCount++;
         }
@@ -72,13 +69,13 @@ public class DataUpload extends DataImp{
 
             while (channel.isOpen() && channel.isConnected() && overTimeCount<OVER_MAX){
 
-                if (overTimeCount==OVER_INIT){ //读取
+                if (overTimeCount==OVER_INIT){ //读取本地文件
                     sendbuf.clear();
                     sendbuf.putLong(sendCount); //次数 -1数据流结束
                     if (sendCount!= -1L){
                         sendbuf.putLong(position);//下标
                         //数据
-                        ops = fileChannel.write(sendbuf,position);
+                        ops = fileChannel.read(sendbuf,position);
                         while (!ops.isDone());
                         try {
                             readLength = ops.get();
@@ -97,12 +94,11 @@ public class DataUpload extends DataImp{
                 }
 
                 //写入
-                channel.write(sendbuf);
+                channel.send(sendbuf,element.toAddress);
 
                 //接收回执
                 recvbuf.clear();
-                len = channel.read(recvbuf);
-                if (len>0){
+                if (channel.receive(recvbuf)!=null){
                     recvbuf.flip();
                     if (recvbuf.limit()== 8 && recvbuf.getLong() == sendCount){
                         if (fileSzie == position){
@@ -115,7 +111,7 @@ public class DataUpload extends DataImp{
 
                 }else{
                     try {
-                        TimeUnit.MICROSECONDS.sleep(10);
+                        TimeUnit.MICROSECONDS.sleep(overTime * 100);
                     } catch (InterruptedException e) {
                     }
                     overTimeCount++;

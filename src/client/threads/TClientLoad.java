@@ -65,10 +65,7 @@ public class TClientLoad extends TranslateThread {
             element.downloadFileMD5 = translate.getResource().getMd5Hash();
         final DataImp download =  new DataDownload(element);
         download.setAction(new TranslateAction() {
-            @Override
-            public void connectSuccess(DataElement element) {
-                LOG.I("连接成功 - "+ element.downloadFileTemp);
-            }
+
 
             @Override
             public void translateSuccess(DataElement element) {

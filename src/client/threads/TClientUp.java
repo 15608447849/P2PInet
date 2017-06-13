@@ -54,10 +54,6 @@ public class TClientUp extends TranslateThread {
 
         final DataImp upload =  new DataUpload(element);
         upload.setAction(new TranslateAction() {
-            @Override
-            public void connectSuccess(DataElement element) {
-                LOG.I("连接成功 - "+ element.uploadFilePath);
-            }
 
             @Override
             public void translateSuccess(DataElement element) {

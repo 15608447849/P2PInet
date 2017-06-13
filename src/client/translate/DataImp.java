@@ -11,9 +11,9 @@ import java.nio.channels.AsynchronousFileChannel;
  */
 public abstract class DataImp extends Thread{
 
-   public static final int OVER_MAX = 256; //超时时间 最大次数
+   public static final int OVER_MAX = 1000; //超时时间 最大次数
    public static final int OVER_INIT = 0; //初始化
-   public static final int overTime = 10; //单次超时时间
+   public static final int overTime = 30; //单次超时时间
 
     protected DataElement element;
     protected TranslateAction action;
@@ -35,22 +35,7 @@ public abstract class DataImp extends Thread{
     @Override
     public void run() {
         //如果未关联
-        //关联管道
-        if (!element.channel.isConnected()){
-            try {
-                element.channel.connect(element.toAddress);
-                LOG.I("连接状态:"+element.channel.isConnected() +" 对方:"+element.channel.getRemoteAddress());
-                if (action!=null ){
-                    action.connectSuccess(element);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                if (action!=null){
-                    action.error(e);
-                }
-                return;
-            }
-        }
+
 
         //判断类型
         if (element.type == DataElement.UPLOAD){
@@ -90,12 +75,7 @@ public abstract class DataImp extends Thread{
                 action.error(new IllegalStateException("未知的数据传输元素类型:"+ element.type));
             }
         }
-        if (element.channel.isOpen() && element.channel.isConnected()){
-            try {
-                element.channel.disconnect();
-            } catch (IOException e) {
-            }
-        }
+
         if (action!=null){
             action.onOver(element);
         }
