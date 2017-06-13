@@ -48,9 +48,9 @@ public class TClientLoad extends TranslateThread {
         LOG.I(TAG+ "数据下载....");
             //创建临时文件
         Path dirPath = translate.getSourceManager().getHome();
-        String filePath = translate.getResource().getPosition();
+        String filePath =dirPath + translate.getResource().getPosition();
         String temFilePath = filePath+".tmp";
-        File temp = new File(dirPath+temFilePath);
+        File temp = new File(temFilePath);
         if (!temp.exists()){
             temp.createNewFile();
         }
@@ -63,7 +63,7 @@ public class TClientLoad extends TranslateThread {
             element.downloadFileTemp = Paths.get(temFilePath);
             element.downloadFile = Paths.get(filePath);
             element.downloadFileMD5 = translate.getResource().getMd5Hash();
-        final DataImp download =  new DataUpload(element);
+        final DataImp download =  new DataDownload(element);
         download.setAction(new TranslateAction() {
             @Override
             public void connectSuccess(DataElement element) {

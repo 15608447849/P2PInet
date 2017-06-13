@@ -39,7 +39,8 @@ public abstract class DataImp extends Thread{
         if (!element.channel.isConnected()){
             try {
                 element.channel.connect(element.toAddress);
-                if (action!=null){
+                LOG.I("连接状态:"+element.channel.isConnected() +" 对方:"+element.channel.getRemoteAddress());
+                if (action!=null ){
                     action.connectSuccess(element);
                 }
             } catch (IOException e) {

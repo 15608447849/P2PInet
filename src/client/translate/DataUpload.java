@@ -22,8 +22,9 @@ public class DataUpload extends DataImp{
     @Override
     protected boolean waitLoaderNotify() {
         overTimeCount = OVER_INIT;
-
+        LOG.I("等待上传命令中...");
         while (overTimeCount< OVER_MAX){
+
             element.buf2.clear();
             try {
                 len = element.channel.write(element.buf2);
@@ -37,6 +38,11 @@ public class DataUpload extends DataImp{
                 if ( cmd == Command.UDPTranslate.resourceUpload){
                     LOG.I("收到数据上传命令.");
                     return true;
+                }
+            }else{
+                try {
+                   sleep(overTime* 20000);
+                } catch (InterruptedException e) {
                 }
             }
             overTimeCount++;
