@@ -1,4 +1,4 @@
-package client.Threads;
+package client.threads;
 
 import client.obj.SerializeSource;
 import client.sourceimp.SourceManager;

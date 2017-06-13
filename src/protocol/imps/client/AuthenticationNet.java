@@ -1,6 +1,6 @@
 package protocol.imps.client;
 
-import client.Threads.AuthenticationThread;
+import client.threads.AuthenticationThread;
 import client.socketimp.SocketManager;
 import protocol.Execute;
 import protocol.Intent;

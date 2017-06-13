@@ -1,4 +1,4 @@
-package client.Threads;
+package client.threads;
 
 import client.obj.SerializeTranslate;
 import protocol.Command;

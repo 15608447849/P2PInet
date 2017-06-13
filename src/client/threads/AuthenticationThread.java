@@ -1,4 +1,4 @@
-package client.Threads;
+package client.threads;
 
 import client.obj.Info;
 import client.socketimp.PortManager;

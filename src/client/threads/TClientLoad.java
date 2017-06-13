@@ -1,16 +1,17 @@
-package client.Threads;
+package client.threads;
 
-import client.sourceimp.SourceManager;
+import client.translate.DataDownload;
+import client.translate.DataElement;
 import protocol.Command;
 import utils.LOG;
 
 import java.io.File;
 import java.io.RandomAccessFile;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Created by user on 2017/6/6.
@@ -54,30 +55,16 @@ public class TClientLoad extends TranslateThread {
         if (!temp.exists()){
             temp.createNewFile();
         }
-        //通知数据发送
-        ByteBuffer buffer = translate.getBuffer();
-        buffer.clear();
-        buffer.put(Command.UDPTranslate.resourceUpload);
-        buffer.flip();
-        translate.sendMessageToTarget(buffer,translate.getTerminalSocket(),translate.getChannel());
-        FileChannel outChannel = new RandomAccessFile(temp,"rw").getChannel();
 
-        //循环接受
-        long length = 0;
-        long fileLength = translate.getResource().getFileLength();
-        while (length<fileLength){
-            buffer.clear();
-            SocketAddress socketAddress = translate.getChannel().receive(buffer);
-            if (socketAddress!=null){
-                buffer.flip();
-                outChannel.write(buffer);
-                length+=buffer.limit();
-                LOG.I("当前进度:"+length);
-            }
-        }
-        outChannel.close();
-        temp.renameTo(new File(filePath));
-        LOG.I("传输完成: "+ filePath);
+        DataElement element = new DataElement(DataElement.DOWNLOAD);
+            element.buf1 = translate.getBuffer();//数据发送
+            element.buf2 =  ByteBuffer.allocate(8);//数据接受
+            element.channel = translate.getChannel();//当前通道对象.
+            element.toAddress = translate.getTerminalSocket();//对端
+            element.downloadFileTemp = Paths.get(temFilePath);
+            element.downloadFile = Paths.get(filePath);
+            element.downloadFileMD5 = translate.getResource().getMd5Hash();
+        new DataDownload(element).start();
     }
 
 

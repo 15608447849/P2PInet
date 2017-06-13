@@ -37,7 +37,7 @@ public class Main {
             if (args!=null && args.length == 1){
                 launchClient_linux();
             }else{
-//                startSource("/psb.jpg");
+                startSource("/aaa.mp4");
 //                launchClient(null);
             }
         }

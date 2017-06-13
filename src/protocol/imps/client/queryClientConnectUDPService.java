@@ -1,6 +1,6 @@
 package protocol.imps.client;
 
-import client.Threads.Translate;
+import client.threads.Translate;
 import client.obj.SerializeConnectTask;
 import client.socketimp.PortManager;
 import client.socketimp.SocketManager;
