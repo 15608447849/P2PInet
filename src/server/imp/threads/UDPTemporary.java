@@ -38,7 +38,6 @@ public class UDPTemporary extends Thread{
     private IOperate operate;
     private int mode;
 
-
     /**
      * 发送消息的处理
      */
@@ -49,7 +48,6 @@ public class UDPTemporary extends Thread{
             //发送连接请求 ,通知AB 连接服务器
             notifyClientAConnect();
             notifyClientBConnect();
-
             while (channel!=null && channel.isOpen()){
                 sendTerminalNatInfo();
                 checkClose();
@@ -234,7 +232,7 @@ public class UDPTemporary extends Thread{
     private void sendTerminalNatInfo() {
         if (connectTask.getComplete()>= 3 && connectTask.getComplete() <5) {//3.4
             //根据客户端A的mac - 找到 Net地址.
-            LOG.I("互换消息 - "+ connectTask.getComplete());
+            LOG.I("互换终端NAT信息 - "+ connectTask.getComplete());
             InetSocketAddress clientANat = getNatAddress(clientA.getMac());
             InetSocketAddress clientBNat = getNatAddress(clientB.getMac());
             if ( clientANat==null || clientANat==null ) return;
@@ -288,7 +286,6 @@ public class UDPTemporary extends Thread{
         sendBuf.clear();
         sendBuf.put(Command.UDPTranslate.serverHeartbeatResp);
         byte[] objBytes =  Parse.sobj2Bytes(translate);
-        LOG.E("UDP - 传输对象长度:"+ objBytes.length);
         sendBuf.put(objBytes);
         sendBuf.flip();
         channel.send(sendBuf,sendTo);

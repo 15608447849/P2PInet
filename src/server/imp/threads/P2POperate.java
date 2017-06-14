@@ -71,7 +71,7 @@ public class P2POperate extends Thread implements IOperate {
                     if((curTime - client.getUpdateTime()) > time){
                         iterator.remove();
                         client.close();//关闭连接
-                        LOG.E("移除客户端:"+client.getMac()+" 当前队列大小:"+set.size());
+                        LOG.E("移除客户端:"+client.getMac()+" 在线客户端数量: "+set.size());
                     }
                 }
             }
@@ -97,8 +97,10 @@ public class P2POperate extends Thread implements IOperate {
             lock.lock();
             if (client.isValid() && client.isAuthentication() && !client.isExist()){
                 boolean flag = set.add(client);
-                LOG.I("添加客户端 : "+client+"  >> "+flag);
                 client.setExist(flag);
+                if (flag){
+                    LOG.E("添加客户端:"+client.getMac()+" 在线客户端数量: "+set.size());
+                }
             }
             //LOG.I("添加:"+client+" ,当前队列大小:"+set.size());
         }finally {

@@ -7,12 +7,21 @@ import server.obj.IParameter;
 import server.imp.threads.P2POperate;
 import server.imp.servers.P2PServer;
 import utils.LOG;
+import utils.MD5Util;
 import utils.NetworkUtil;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousFileChannel;
+import java.nio.channels.CompletionHandler;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Random;
 

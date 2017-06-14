@@ -37,7 +37,7 @@ public abstract class TranslateThread extends Thread{
         DatagramChannel channel = DatagramChannel.open();
         channel.bind(translate.getLocalSocket());
         channel.configureBlocking(false);
-        ByteBuffer buffer = ByteBuffer.allocate(Parse.DATA_BUFFER_MAX_ZONE);
+        ByteBuffer buffer = ByteBuffer.allocate(Parse.UDP_DATA_MIN_BUFFER_ZONE);
         translate.setChannel(channel);
         translate.setBuffer(buffer);
     }

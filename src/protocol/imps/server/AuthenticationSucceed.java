@@ -22,7 +22,7 @@ public class AuthenticationSucceed implements Execute.IAction {
             intent.getServerCLI().setMacAddress(macBytes);
             intent.getServerCLI().setNatType(Parse.bytes2int(natTypeBytes));
             intent.getServerCLI().setAuthentication(2);
-            LOG.I( intent.getServerCLI()+" 客户端认证完成, NAT类型:  "+intent.getServerCLI().getNatType());
+           //LOG.I( intent.getServerCLI()+" 客户端认证完成, NAT类型:  "+intent.getServerCLI().getNatType());
         } catch (Exception e) {
             e.printStackTrace();
         }

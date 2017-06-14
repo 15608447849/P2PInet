@@ -7,6 +7,7 @@ import utils.MD5Util;
 
 import java.io.IOException;
 import java.net.SocketAddress;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
@@ -32,27 +33,36 @@ public class DataDownload extends DataImp{
         ByteBuffer buffer = element.buf1;
         DatagramChannel channel = element.channel;
         AsynchronousFileChannel fileChannel = null;
-        int count = 0;
         SocketAddress address;
+
+        int mtuValue = Parse.DATA_BUFFER_MAX_ZONE;
+        ByteBuffer checkBuffer = ByteBuffer.allocate(mtuValue);
         try{
             fileChannel = AsynchronousFileChannel.open(element.downloadFileTemp, StandardOpenOption.WRITE);
 
             //开始接收
             while (channel.isOpen() && overTimeCount<OVER_MAX){
-                if (count!=3){
-                    sendbuf.clear();
-                    sendbuf.put(Command.UDPTranslate.resourceUpload);
+                if (checkBuffer!=null && mtuValue>Parse.UDP_DATA_MIN_BUFFER_ZONE){
+                    checkBuffer.clear();
+                    for (int i = 0;i<mtuValue;i++){
+                        checkBuffer.put(Command.UDPTranslate.mtuCheck);
+                    }
                     sendbuf.flip();
-                    channel.send(sendbuf, element.toAddress);
-                    LOG.I("请求服务器上传."+ count);
+                    channel.send(checkBuffer, element.toAddress);
+                    LOG.I("确定MTU - "+ mtuValue);
+                    mtuValue--;
+                    continue;
                 }
 
                 buffer.clear();
                 address = channel.receive(buffer);
                 if (  address != null && address.equals(element.toAddress)){
                     buffer.flip();
-                    if (buffer.limit() == 1){
-                        LOG.I("收到上传响应: "+ (++count));
+                    if (buffer.limit() == 4){
+                       mtuValue = buffer.getInt();
+                        LOG.I("收到MTU确定,设置缓冲区 MTU == "+mtuValue);
+                        checkBuffer=null;
+                        sendbuf = ByteBuffer.allocate(mtuValue);
                     }else if (buffer.limit()>8){
                         //数据分析:
                         sendCount = buffer.getLong();
@@ -77,13 +87,13 @@ public class DataDownload extends DataImp{
                                    LOG.I("请求重传,数据异常.");
                                }
                            }
-                           //回执
-                           sendbuf.clear();
-                           recvCount++;
-                           sendbuf.putLong(recvCount);
-                           sendbuf.flip();
-                           channel.send(sendbuf,element.toAddress);
-                           overTimeCount=OVER_INIT;
+                               //回执
+                               sendbuf.clear();
+                               recvCount++;
+                               sendbuf.putLong(recvCount);
+                               sendbuf.flip();
+                               channel.send(sendbuf,element.toAddress);
+                               overTimeCount=OVER_INIT;
                         }
 
 

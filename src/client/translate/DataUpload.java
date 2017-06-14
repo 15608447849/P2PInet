@@ -1,6 +1,7 @@
 package client.translate;
 
 import protocol.Command;
+import protocol.Parse;
 import utils.LOG;
 
 import java.io.IOException;
@@ -23,23 +24,25 @@ public class DataUpload extends DataImp{
     protected boolean waitingNotify() {
         try {
             overTimeCount = OVER_INIT;
-            LOG.I("等待上传通知中.");
-            int count = 0;
+            LOG.I("确定MTU大小.");
+            ByteBuffer checkBuffer = ByteBuffer.allocate(Parse.DATA_BUFFER_MAX_ZONE);
             while (overTimeCount< OVER_MAX){
-                element.buf2.clear();
-                SocketAddress address  = element.channel.receive(element.buf2);
+                checkBuffer.clear();
+                SocketAddress address  = element.channel.receive(checkBuffer);
     //                LOG.I("收到数据 - ."+address);
                 if (address != null && address.equals(element.toAddress)){
-                     element.buf2.flip();
-                    cmd = element.buf2.get(0);
-                    if ( cmd == Command.UDPTranslate.resourceUpload){
-                        LOG.I("收到数据上传通知. - 记录地址:"+ address + " - client: "+ element.toAddress);
+                    checkBuffer.flip();
+
+                    if (checkBuffer.get(0) == Command.UDPTranslate.mtuCheck){
+                        LOG.E("MTU : "+checkBuffer.limit());
+                        checkBuffer.clear();
+                        checkBuffer.putInt(checkBuffer.limit());
+                        checkBuffer.flip();
                         //响应
-                        element.channel.send(element.buf2,address);
-                        overTimeCount=OVER_INIT;
-                        count++;
-                        if (count==3) return true;
+                        element.channel.send(checkBuffer,address);
+                        return true;
                     }
+
                 }else{
                     waitTime();
                     overTimeCount++;

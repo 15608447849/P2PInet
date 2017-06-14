@@ -134,7 +134,7 @@ public class CLI extends Thread implements CompletionHandler<Integer,ByteBuffer>
         stringBuffer.append(", 网络地址: "+ netSocket);
         stringBuffer.append(", 连接有效: "+ isValid());
         stringBuffer.append(", 更新时间:"+ getUpdateTimeString());
-        stringBuffer.append(", HashCode:"+ hashCode());
+        stringBuffer.append(", NAT类型:"+ getNatTypeString());
         stringBuffer.append("]");
         return stringBuffer.toString();
     }
@@ -277,5 +277,24 @@ public class CLI extends Thread implements CompletionHandler<Integer,ByteBuffer>
 
     public Intent getIntent() {
         return intent;
+    }
+
+    public String getNatTypeString() {
+        if (natType == NetworkUtil.Full_Cone_NAT){
+            return "FULL CONE";
+        }
+        if (natType == NetworkUtil.Restricted_Cone_NAT){
+            return "RESTRICTED CONE";
+        }
+        if (natType == NetworkUtil.Port_Restricted_Cone_NAT){
+            return "PORT RESTRICTED CONE";
+        }
+        if (natType == NetworkUtil.Symmetric_NAT){
+            return "SYMMETRIC NAT";
+        }
+        if (natType == NetworkUtil.NotNat){
+            return "因特网";
+        }
+        return "未知";
     }
 }

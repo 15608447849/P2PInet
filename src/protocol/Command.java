@@ -96,9 +96,11 @@ public class Command {
          */
         public static final byte shakePackage_resp = 34;
         /**
-         * 开始传递数据
+         * 检测MTU
          */
-        public static final byte resourceUpload = 35;
+        public static final byte mtuCheck = 40;
+
+
     }
 
 }
