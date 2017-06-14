@@ -14,16 +14,18 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.Selector;
 
+import static protocol.Parse.NAT_BUFFER_ZONE;
+
 /**
  * Created by user on 2017/6/9.
  * UDP认证辅助服务器
  */
 public class AuthenticationClientAuxiliary extends IThread{
+    private final int loopTime = 1000 * 8;
     private InetSocketAddress localAddress;
     private InetSocketAddress serverAddress;
     private DatagramChannel channel;
     private ByteBuffer buffer;
-    private SendUDPMessageThread sths;
     public AuthenticationClientAuxiliary(IServer server) {
         super(server);
         IParameter param = (IParameter) server.getParam("param");
@@ -36,18 +38,15 @@ public class AuthenticationClientAuxiliary extends IThread{
         try {
             channel = DatagramChannel.open().bind(localAddress);
             channel.configureBlocking(false);
-            buffer = ByteBuffer.allocate(1+4+4); // 最大: 协议, 指定IP,指定端口.
+            buffer = ByteBuffer.allocate(NAT_BUFFER_ZONE); // 最大: 协议, 指定IP,指定端口.
             LOG.I("启动 UDP认证 辅助服务器 ,本地地址 - :"+localAddress);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        sths = new SendUDPMessageThread();
-
+        new SendUDPMessageThread().start();
         while (isRun){
           receiveUdpMessage();
         }
-
-
     }
 
     private void receiveUdpMessage() {
@@ -70,7 +69,7 @@ public class AuthenticationClientAuxiliary extends IThread{
                     buffer.put(Command.UDPAuthentication.check_full_nat_resp);
                     buffer.flip();
                     channel.send(buffer,address);
-                    LOG.I("转发目标: "+ address+ " "+ buffer+"  消息已发送.");
+                    LOG.I("转发目标: "+ address +"  消息已发送.");
                 }
                 if (command == Command.UDPAuthentication.client_query_nat_address){
                     byte[] ipBytes = address.getAddress().getAddress();
@@ -81,7 +80,7 @@ public class AuthenticationClientAuxiliary extends IThread{
                     buffer.put(portBytes);
                     buffer.flip();
                     channel.send(buffer,address);
-                    LOG.I("UDP认证辅助服务器 收到 "+address+" 请求.返回对方Nat地址." + buffer +" 已发送.");
+                    LOG.I("UDP认证辅助服务器 收到 "+address+" 请求.已返回对方NAT信息.");
                 }
             }
         } catch (Exception e) {
@@ -97,7 +96,6 @@ public class AuthenticationClientAuxiliary extends IThread{
             buf.clear();
             buf.put(Command.UDPAuthentication.udp_auxiliaty);
             buf.flip();
-            this.start();
         }
 
         @Override
@@ -114,7 +112,7 @@ public class AuthenticationClientAuxiliary extends IThread{
                         }
                     }
                     try {
-                        this.wait(1000*8);
+                        this.wait(loopTime);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

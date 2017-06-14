@@ -3,6 +3,7 @@ package server.obj;
 import client.obj.SerializeConnectTask;
 import protocol.Command;
 import protocol.Parse;
+import utils.LOG;
 import utils.NetworkUtil;
 
 import java.io.IOException;
@@ -40,14 +41,15 @@ public class CLIWrite {
         if (client.getMac() != null
                 &&  !NetworkUtil.macByte2String(hostMacBytes).equals(client.getMac())
                 && client.isValid()){
-               int len = source.length;
-               byte[] lengthBytes = Parse.int2bytes(len);
-               ByteBuffer buff = ByteBuffer.allocate(1+lengthBytes.length+len);
+                int len = source.length;
+                LOG.E("资源同步对象序列化长度:"+len);
+                byte[] lengthBytes = Parse.int2bytes(len);
+                ByteBuffer buff = ByteBuffer.allocate(1+lengthBytes.length+len);
                 buff.put(Command.Server.turnSynchronizationSource);//命令
                 buff.put(lengthBytes);//长度
                 buff.put(source);//资源信息序列化对象
                 buff.flip();
-               client.getSocket().write(buff);
+                client.getSocket().write(buff);
         }
     }
 
@@ -61,6 +63,7 @@ public class CLIWrite {
             try {
                 byte[] data = Parse.sobj2Bytes(connectTask);
                 int len = data.length;
+                LOG.E("传输对象序列化长度:"+len);
                 byte[] lenBytes =  Parse.int2bytes(len);
                 ByteBuffer buff = ByteBuffer.allocate(1+lenBytes.length+len);
                 buff.put(cmd);//命令
@@ -75,6 +78,4 @@ public class CLIWrite {
         }
         return false;
     }
-
-
 }

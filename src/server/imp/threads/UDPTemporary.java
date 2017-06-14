@@ -32,8 +32,8 @@ public class UDPTemporary extends Thread{
     public CLI clientA;
     public CLI clientB;
     private IThreadInterface manager;
-    private ByteBuffer wbuf;
-    private ByteBuffer buffer;
+    private ByteBuffer sendBuf;
+    private ByteBuffer recBuffer;
     private IOperate operate;
     private int mode;
 
@@ -103,8 +103,8 @@ public class UDPTemporary extends Thread{
         //获取执行类
         this.connectTask.setServerTempAddress(socketAddress);
         manager.putUseConnect(socketAddress.getPort(),this);
-        buffer = ByteBuffer.allocate(Parse.buffSize/4);
-        wbuf = ByteBuffer.allocate(Parse.buffSize);
+        recBuffer = ByteBuffer.allocate(Parse.UDP_DATA_MIN_BUFFER_ZONE);
+        sendBuf = ByteBuffer.allocate(Parse.UDP_DATA_MIN_BUFFER_ZONE);
         selector = Selector.open();
         channel = DatagramChannel.open().bind(socketAddress);
         channel.configureBlocking(false);
@@ -159,8 +159,10 @@ public class UDPTemporary extends Thread{
         LOG.I(this + " 通知客户端B : "+clientB+" 主动连接UDP.");
     }
 
-    //处理请求
+
+    //处理请求(接受服务器的消息)
     private void receiveMessage() throws Exception {
+        DatagramChannel sc;
         while (selector.isOpen() && selector.select() > 0){
             Iterator iterator = selector.selectedKeys().iterator();
             while (iterator.hasNext()) {
@@ -168,21 +170,22 @@ public class UDPTemporary extends Thread{
                 key = (SelectionKey) iterator.next();
                 iterator.remove();
                 if (key.isReadable()) {
-                    DatagramChannel sc = (DatagramChannel) key.channel();
-                    buffer.clear();
-                    handler((InetSocketAddress) sc.receive(buffer));
+                    recBuffer.clear();
+                    sc = (DatagramChannel) key.channel();
+                    handler((InetSocketAddress) sc.receive(recBuffer));
                 }
             }
         }
     }
 
     private void handler(InetSocketAddress clientNatAddress) {
-        buffer.flip();
-        byte command = buffer.get(0);
+        recBuffer.flip();
+        if (clientNatAddress==null || recBuffer.limit()==0) return;
+
+        byte command = recBuffer.get(0);
         if (command == Command.UDPTranslate.udpHeartbeat){
             handlerClientHeartbeat(clientNatAddress);
-        }else
-        if (command == Command.UDPTranslate.serverHeartbeatResp){
+        }else if (command == Command.UDPTranslate.serverHeartbeatResp){
             handlerClientReceiveResp(clientNatAddress);
         }
     }
@@ -197,8 +200,8 @@ public class UDPTemporary extends Thread{
             if (connectTask.getComplete() >= 3 ) return;
 
             byte[] mac = new byte[6];
-            buffer.position(1);
-            buffer.get(mac,0,6);
+            recBuffer.position(1);
+            recBuffer.get(mac,0,6);
             String macStr = NetworkUtil.macByte2String(mac);
 
             if (macStr.equals(connectTask.getDownloadHostMac())){
@@ -215,8 +218,8 @@ public class UDPTemporary extends Thread{
     //客户端 接收到 服务器的命令回应
     private void handlerClientReceiveResp(InetSocketAddress clientNatAddress) {
         byte[] mac = new byte[6];
-        buffer.position(1);
-        buffer.get(mac,0,6);
+        recBuffer.position(1);
+        recBuffer.get(mac,0,6);
         String macStr = NetworkUtil.macByte2String(mac);
         if ( macStr.equals(clientA.getMac()) || macStr.equals(clientB.getMac())){
             connectTask.setComplete(connectTask.getComplete()+1);
@@ -285,11 +288,13 @@ public class UDPTemporary extends Thread{
 
     //写对象
     private void sendObject(Object object,InetSocketAddress address) throws IOException {
-        wbuf.clear();
-        wbuf.put(Command.UDPTranslate.serverHeartbeatResp);
-        wbuf.put( Parse.sobj2Bytes(object));
-        wbuf.flip();
-        channel.send(wbuf,address);
+        sendBuf.clear();
+        sendBuf.put(Command.UDPTranslate.serverHeartbeatResp);
+        byte[] objBytes =  Parse.sobj2Bytes(object);
+        LOG.E("UDP - 传输对象长度:"+ objBytes.length);
+        sendBuf.put(objBytes);
+        sendBuf.flip();
+        channel.send(sendBuf,address);
     }
 
     private InetSocketAddress getNatAddress(String mac) {

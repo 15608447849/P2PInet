@@ -31,7 +31,7 @@ public class FindFileVisitor extends SimpleFileVisitor<Path> {
             fileList.clear();
             long time = System.currentTimeMillis();
             Files.walkFileTree(homeDir, this);
-            System.out.println("耗时:" + (System.currentTimeMillis() - time) );
+            System.out.println("检测资源耗时:" + (System.currentTimeMillis() - time) +" 毫秒.");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -41,14 +41,14 @@ public class FindFileVisitor extends SimpleFileVisitor<Path> {
     public boolean ergodicOnes(){
             Path fileParh = Paths.get(source.getPosition());
             File file = fileParh.toFile();
-            return equalsMD5(file,source.getMd5Hash());
+            return equalsMD5(file,source.getMd5());
     }
     @Override
     public FileVisitResult visitFile(Path filePath, BasicFileAttributes attrs) {
             File file = filePath.toFile();
-        if ( file.getName().equals(source.getFileName()) || file.length() == source.getFileLength()) {
+        if ( file.getAbsolutePath().contains(source.getPosition()) || file.length() == source.getSize()) {
             //比较md5
-            if (equalsMD5(file,source.getMd5Hash())){
+            if (equalsMD5(file,source.getMd5())){
                 fileList.add(file);
             }
         }

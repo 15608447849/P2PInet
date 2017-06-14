@@ -37,8 +37,8 @@ public class Main {
             if (args!=null && args.length == 1){
                 launchClient_linux();
             }else{
-//                startSource("/psb.jpg");
-                launchClient(null);
+                startSource("/psb.jpg");
+//                launchClient(null);
             }
         }
 

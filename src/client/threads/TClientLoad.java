@@ -1,14 +1,10 @@
 package client.threads;
 
 import client.translate.*;
-import protocol.Command;
 import utils.LOG;
 
 import java.io.File;
-import java.io.RandomAccessFile;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -62,8 +58,8 @@ public class TClientLoad extends TranslateThread {
             element.toAddress = translate.getTerminalSocket();//对端
             element.downloadFileTemp = Paths.get(temFilePath);
             element.downloadFile = Paths.get(filePath);
-            element.downloadFileMD5 = translate.getResource().getMd5Hash();
-            element.fileLength = translate.getResource().getFileLength();
+            element.downloadFileMD5 = translate.getResource().getMd5();
+            element.fileLength = translate.getResource().getSize();
             new DataDownload(element).setAction(new TranslateAction() {
             @Override
             public void error(Exception e) {

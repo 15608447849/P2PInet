@@ -26,7 +26,7 @@ public class SocketManager implements CompletionHandler<Void, Void> {
     public SocketHandler reader;
     public SocketCommand commander;
     public SourceManager sourceManager;
-    private final ByteBuffer byteBuffer = ByteBuffer.allocate(Parse.buffSize);
+    private final ByteBuffer byteBuffer = ByteBuffer.allocate(Parse.DATA_BUFFER_MAX_ZONE);
     private boolean isConnected;
     public SocketManager(Info info,SourceManager sourceManager){
         this.info = info;

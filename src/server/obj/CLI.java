@@ -23,8 +23,6 @@ public class CLI extends Thread implements CompletionHandler<Integer,ByteBuffer>
     private AsynchronousSocketChannel socket;
     //数据块
     private ByteBuffer byteBuffer;
-    //操作者
-    private IOperate operate;
     //网络地址
     private InetSocketAddress netSocket;
     //本机物理地址
@@ -49,8 +47,7 @@ public class CLI extends Thread implements CompletionHandler<Integer,ByteBuffer>
         this.setSocket(channel);
         this.intent = intent;
         this.intent.putCLI(this);
-        this.byteBuffer = ByteBuffer.allocate(Parse.buffSize);
-        this.operate = operate;
+        this.byteBuffer = ByteBuffer.allocate(Parse.DATA_BUFFER_MAX_ZONE);
         this.write = new CLIWrite(this);
         //开始读取内容
         this.readContent();
@@ -92,11 +89,9 @@ public class CLI extends Thread implements CompletionHandler<Integer,ByteBuffer>
             e.printStackTrace();
         }finally {
             byteBuffer = null;
-            time = 0;
             socket=null;
-            operate = null;
             write = null;
-            LOG.E(this + " 关闭.");
+//            LOG.E(this + " 关闭.");
         }
         return false;
     }

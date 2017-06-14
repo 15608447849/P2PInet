@@ -15,7 +15,10 @@ public class Parse {
     /**
      * 数据块大小
      */
-    public static final int buffSize = 1500-20-20;
+    public static final int DATA_BUFFER_MAX_ZONE = 1500-20; //MTU - ip头
+    public static final int UDP_DATA_MIN_BUFFER_ZONE = 576-20-8;// intenet标准MTU - IP头 -UDP头
+    public static final int NAT_BUFFER_ZONE = 1+4+4+4+4;//nat认证传输的最大数据 : 协议: (ip:port):(ip:port)
+
     public static final String _protocol = "protocol";
     public static final String _length = "length";
     public static final String _dataBlock = "dataBlock";

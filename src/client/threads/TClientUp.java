@@ -47,8 +47,8 @@ public class TClientUp extends TranslateThread {
             element.toAddress = translate.getTerminalSocket();//对端
              String filePath = translate.getSourceManager().getHome()+translate.getResource().getPosition();
             element.uploadFilePath = Paths.get(filePath);
-            element.uploadFileMD5 = translate.getResource().getMd5Hash();
-            element.fileLength = translate.getResource().getFileLength();
+            element.uploadFileMD5 = translate.getResource().getMd5();
+            element.fileLength = translate.getResource().getSize();
         new DataUpload(element).setAction(new TranslateAction() {
             @Override
             public void error(Exception e) {

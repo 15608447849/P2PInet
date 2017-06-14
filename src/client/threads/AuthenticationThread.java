@@ -53,7 +53,7 @@ public class AuthenticationThread extends Thread{
         this.local = new InetSocketAddress(info.getLocalAddress().getAddress(),localPort);
         channel = DatagramChannel.open().bind(local);
         channel.configureBlocking(false);
-        byteBuffer = ByteBuffer.allocate(1+4+4+4+4);
+        byteBuffer = ByteBuffer.allocate(Parse.NAT_BUFFER_ZONE);
         start();
     }
 
@@ -101,46 +101,46 @@ public class AuthenticationThread extends Thread{
         if (temp== CHECK_NAT_INFO){sendNetInfo();}
         if (temp == CHECK_FULL_CONE){sendFullCheck();}
         if (temp == CHECK_SYMMETRIC){sendSymmetricCheck();}
-        if (temp == CHECK_RESTRICTED_CONE){  sendPortRestrictedCheck();}
+        if (temp == CHECK_RESTRICTED_CONE){sendPortRestrictedCheck();}
     }
 
     //发送 NAT 信息
     private void sendNetInfo() throws IOException {
-        LOG.I("检测是否在NAT后.");
+//        LOG.I("检测是否在NAT后.");
         byteBuffer.clear();
         byteBuffer.put(Command.UDPAuthentication.client_query_nat_address);
         byteBuffer.flip();
         channel.send(byteBuffer, server1Address);
-        LOG.I("请求服务器发送 nat信息., address: "+server1Address);
+//        LOG.I("请求服务器发送 nat信息., address: "+server1Address);
     }
 
     //检测 full core net
     private void sendFullCheck() throws IOException {
-        LOG.I("检测FULL CONE NAT.");
+//        LOG.I("检测FULL CONE NAT.");
         byteBuffer.clear();
         byteBuffer.clear();
         byteBuffer.put(Command.UDPAuthentication.check_full_nat);
         byteBuffer.flip();
         channel.send(byteBuffer, server1Address);
-        LOG.I("请求服务器检测 full nat 检测结果. address: "+server1Address);
+//        LOG.I("请求服务器检测 full nat 检测结果. address: "+server1Address);
     }
 
     private void sendSymmetricCheck() throws IOException  {
-        LOG.I("检测SYMMETRIC NAT.");
+//        LOG.I("检测SYMMETRIC NAT.");
             byteBuffer.clear();
             byteBuffer.put(Command.UDPAuthentication.client_query_nat_address);
             byteBuffer.flip();
             channel.send(byteBuffer,server2Address);
-            LOG.I("请求服务器检测 symmetric nat, address: " + server2Address);
+//            LOG.I("请求服务器检测 symmetric nat, address: " + server2Address);
 
     }
     private void sendPortRestrictedCheck() throws IOException {
-        LOG.I("检测PORT RESTRICTED NAT.");
+//        LOG.I("检测PORT RESTRICTED NAT.");
         byteBuffer.clear();
         byteBuffer.put(Command.UDPAuthentication.check_restricted_nat);
         byteBuffer.flip();
         channel.send(byteBuffer,server1Address);
-        LOG.I("请求服务器检测 symmetric nat, address: " + server1Address);
+//        LOG.I("请求服务器检测 port restricted nat, address: " + server1Address);
     }
 
     /**接受消息*/
@@ -165,7 +165,7 @@ public class AuthenticationThread extends Thread{
                         info.natType = NotNat;
                         count=-1;
                     }else{
-                        LOG.I("内网: "+ local +"-----> NAT: "+ nat1MapperAddress +"\n 请求服务器检测NAT的类型.");
+                        LOG.I("内网: "+ local +"======> NAT: "+ nat1MapperAddress +"\n请求服务器检测NAT的类型.");
                         if (byteBuffer.limit()>9){
                             //接收第二个服务器IP地址.-
                             byteBuffer.position(9);
@@ -173,11 +173,11 @@ public class AuthenticationThread extends Thread{
                             byteBuffer.position(13);
                             byteBuffer.get(portByte);
                             server2Address =  new InetSocketAddress(InetAddress.getByAddress(ipByte), Parse.bytes2int(portByte));
-                            LOG.I("UDP认证辅助服务器: "+ server2Address);
+                            LOG.I("UDP认证辅助服务器地址: "+ server2Address);
                             temp = CHECK_FULL_CONE;//判断net类型->full检测
                         }else{
                             count=-1;
-                            LOG.I("服务器无法检测NAT类型.");
+                            LOG.I("服务器无法检测NAT类型.辅助服务器未启动.");
                         }
                     }
                 }

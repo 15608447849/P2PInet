@@ -27,7 +27,7 @@ public class NetAuthenticationHelper extends IThread {
     private DatagramChannel channel2;
     private InetSocketAddress remoteUdpServer;//认证辅助服务器地址
     private ByteBuffer byteBuffer;
-    private final CheckAuxiliary caltd = new CheckAuxiliary();
+    private final CheckAuxiliary checkThread = new CheckAuxiliary();
     public NetAuthenticationHelper(IServer server) {
         super(server);
         IParameter parameter = (IParameter) server.getParam("param");
@@ -50,7 +50,7 @@ public class NetAuthenticationHelper extends IThread {
         this.channel1.register(selector, SelectionKey.OP_READ);
         this.channel2.register(selector, SelectionKey.OP_READ);
         //最大数据 : 标识符+IP+PORT = 1+4+4 = 9;
-        this.byteBuffer = ByteBuffer.allocate(1+4+4+4+4);
+        this.byteBuffer = ByteBuffer.allocate(Parse.NAT_BUFFER_ZONE);
         launch();
         LOG.I("UDP NET 认证服务 ,启动.");
     }
@@ -102,10 +102,10 @@ public class NetAuthenticationHelper extends IThread {
             byteBuffer.flip();
             byte tag = byteBuffer.get(0);
             if (tag == Command.UDPAuthentication.udp_auxiliaty){
-                caltd.updateTime =System.currentTimeMillis();
+                checkThread.updateTime = System.currentTimeMillis();
                 if (remoteUdpServer == null || !remoteUdpServer.equals(socketAddress) ){
                     remoteUdpServer = socketAddress;
-                    LOG.I("UDP认证辅助服务器已连接 , "+ socketAddress);
+                    LOG.I("[UDP类型认证] 辅助服务器已连接 , "+ socketAddress);
                 }
 
             }

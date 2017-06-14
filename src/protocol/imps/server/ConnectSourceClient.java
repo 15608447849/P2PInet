@@ -19,8 +19,9 @@ public class ConnectSourceClient implements Execute.IAction {
     public void action(Intent intent) {
         try {
             HashMap<String,Object> map = intent.getMap();
-            SerializeConnectTask connTask = (SerializeConnectTask) Parse.bytes2Sobj((byte[]) map.get(Parse._connectTaskBytes));
-            LOG.I("建立连接请求: "+ connTask.getDownloadHostMac()+ " -> "+ connTask.getUploadHostMac());
+            byte[] objBytes = (byte[]) map.get(Parse._connectTaskBytes);
+            SerializeConnectTask connTask = (SerializeConnectTask) Parse.bytes2Sobj(objBytes);
+            LOG.I("建立点对点连接请求: ["+ connTask.getDownloadHostMac()+ "] ============> ["+ connTask.getUploadHostMac()+"] ,"+"数据连接对象大小: "+ objBytes.length);
             IThreadInterface udpManager = (IThreadInterface) intent.getOperate().getServer().getParam("udp");
             udpManager.putNewTask(connTask);
         } catch (Exception e) {

@@ -25,7 +25,6 @@ public class Info {
      * 本地mac地址
      */
     private byte[] localMac;
-
     /**
      *
      * 客户端NET 类型
@@ -37,7 +36,6 @@ public class Info {
         this.localAddress = localAddress;
         this.serverAddress = serverAddress;
         this.localMac = NetworkUtil.getMACAddress(localAddress.getAddress());
-
     }
 
     public InetSocketAddress getLocalAddress() {
