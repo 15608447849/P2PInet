@@ -64,8 +64,7 @@ public class TClientLoad extends TranslateThread {
             element.downloadFile = Paths.get(filePath);
             element.downloadFileMD5 = translate.getResource().getMd5Hash();
             element.fileLength = translate.getResource().getFileLength();
-        final DataImp download =  new DataDownload(element);
-        download.setAction(new TranslateAction() {
+            new DataDownload(element).setAction(new TranslateAction() {
             @Override
             public void error(Exception e) {
                 LOG.I("传输错误 - "+ e);
@@ -73,13 +72,13 @@ public class TClientLoad extends TranslateThread {
             @Override
             public void onComplete(DataElement element) {
                 LOG.I("传输完成 - "+ element);
-                synchronized (download){
-                    download.notify();
+                synchronized (element){
+                    element.notify();
                 }
             }
         }).start();
-        synchronized (download){
-            download.wait();
+        synchronized (element){
+            element.wait();
         }
     }
 

@@ -3,6 +3,7 @@ package utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
@@ -30,10 +31,11 @@ public class MD5Util {
      * @throws IOException
      */
     public static byte[] getFileMD5Bytes(File file) throws IOException {
-        FileInputStream in = new FileInputStream(file);
-        FileChannel ch = in.getChannel();
-        MappedByteBuffer byteBuffer = ch.map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+        FileChannel ch = new RandomAccessFile(file,"rw").getChannel();
+        MappedByteBuffer byteBuffer = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());//内存映射
         messagedigest.update(byteBuffer);
+        ch.close();
+        new MPrivilegedAction(byteBuffer);
         return messagedigest.digest();
     }
 

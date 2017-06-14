@@ -1,9 +1,6 @@
 package client.threads;
 
-import client.translate.DataElement;
-import client.translate.DataImp;
-import client.translate.DataUpload;
-import client.translate.TranslateAction;
+import client.translate.*;
 import utils.LOG;
 
 import java.nio.ByteBuffer;
@@ -52,8 +49,22 @@ public class TClientUp extends TranslateThread {
             element.uploadFilePath = Paths.get(filePath);
             element.uploadFileMD5 = translate.getResource().getMd5Hash();
             element.fileLength = translate.getResource().getFileLength();
-            new DataUpload(element).start();
-            join();
+        new DataUpload(element).setAction(new TranslateAction() {
+            @Override
+            public void error(Exception e) {
+                LOG.I("传输错误 - "+ e);
+            }
+            @Override
+            public void onComplete(DataElement element) {
+                LOG.I("传输完成 - "+ element);
+                synchronized (element){
+                    element.notify();
+                }
+            }
+        }).start();
+        synchronized (element){
+            element.wait();
+        }
     }
 
 

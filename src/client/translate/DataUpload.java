@@ -83,7 +83,7 @@ public class DataUpload extends DataImp{
                     ops = fileChannel.read(sendbuf,position);
                     while (!ops.isDone());
                     readLength = ops.get();
-                        LOG.I("当前读取次数: "+ sendCount+" position:"+ position+" 当次读取量:"+readLength);
+                        //LOG.I("当前读取次数: "+ sendCount+" position:"+ position+" 当次读取量:"+readLength);
                         if (readLength > 0){
                             position+=readLength;
                             sendCount++;
@@ -111,10 +111,7 @@ public class DataUpload extends DataImp{
                             overTimeCount=OVER_INIT;//继续
                     }
                 }else{
-//                    LOG.I("超时 - "+overTimeCount);
                     waitTime();
-
-//                    LOG.I("等待结束");
                     overTimeCount++;
                 }
             }
@@ -125,7 +122,6 @@ public class DataUpload extends DataImp{
         }finally {
            closeFileChannel(fileChannel);
         }
-
         return super.translation();
     }
 }

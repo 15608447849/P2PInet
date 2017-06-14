@@ -13,7 +13,7 @@ public abstract class DataImp extends Thread{
 
    public static final int OVER_MAX = 1000; //超时时间 最大次数
    public static final int OVER_INIT = 0; //初始化
-   public static final int overTime = 30 * 1000; //单次超时时间
+   public static final int overTime = 1000; //单次超时时间
 
     protected DataElement element;
     protected TranslateAction action;
@@ -50,7 +50,8 @@ public abstract class DataImp extends Thread{
                         action.error(new IllegalStateException("数据传输超时获取异常关闭."));
                     }
                 }
-        }if (action!=null){
+        }
+        if (action!=null){
             action.onComplete(element);
         }
     }

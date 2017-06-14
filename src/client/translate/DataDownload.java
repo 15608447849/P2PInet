@@ -61,19 +61,16 @@ public class DataDownload extends DataImp{
                             position = buffer.getLong();
                            Future<Integer> ops = fileChannel.write(buffer,position);
                            while (!ops.isDone());
-                           LOG.I(sendCount+" --> "+ position+" ---> "+ ops.get());
+                           //LOG.I(sendCount+" --> "+ position+" ---> "+ ops.get());
                            if (ops.get()==0){
                                //传输结束
-
                                //判断文件MD5是否正确,不正确重新传输.
                                String md5 = MD5Util.getFileMD5String(element.downloadFileTemp.toFile());
-
                                if (md5.equalsIgnoreCase(element.downloadFileMD5)){
                                    //跳出循环
                                    buffer.clear();
                                    closeFileChannel(fileChannel);
-                                   boolean flag = element.downloadFileTemp.toFile().renameTo(element.downloadFile.toFile());
-                                   LOG.I("下载完成 - 文件MD5:"+ md5 +" , 源MD5" +element.downloadFileMD5+" ,从命名:"+flag);
+                                   LOG.I("下载完成 - 文件MD5:"+ md5 +" , 源MD5" +element.downloadFileMD5+" ,从命名:"+element.downloadFileTemp.toFile().renameTo(element.downloadFile.toFile()));
                                    return true;
                                }else{
                                    recvCount = -1;
