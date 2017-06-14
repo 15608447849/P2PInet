@@ -13,7 +13,7 @@ public abstract class DataImp extends Thread{
 
    public static final int OVER_MAX = 1000; //超时时间 最大次数
    public static final int OVER_INIT = 0; //初始化
-   public static final int overTime = 30; //单次超时时间
+   public static final int overTime = 30 * 1000; //单次超时时间
 
     protected DataElement element;
     protected TranslateAction action;
@@ -65,7 +65,7 @@ public abstract class DataImp extends Thread{
 
     protected void waitTime(){
         try {
-            TimeUnit.MICROSECONDS.sleep(overTime * 100);
+            TimeUnit.MICROSECONDS.sleep(overTime );
         } catch (InterruptedException e) {
         }
     }

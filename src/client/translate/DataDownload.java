@@ -12,6 +12,7 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.DatagramChannel;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.Future;
 
 /**
  * Created by user on 2017/6/13.
@@ -28,13 +29,14 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
         position = 0L;
         recvCount=0L;//接收
         ByteBuffer sendbuf = element.buf2;
+        ByteBuffer buffer = element.buf1;
         DatagramChannel channel = element.channel;
         AsynchronousFileChannel fileChannel = null;
         int count = 0;
         SocketAddress address;
         try{
             fileChannel = AsynchronousFileChannel.open(element.downloadFileTemp, StandardOpenOption.WRITE);
-            ByteBuffer buffer;
+
             //开始接收
             while (channel.isOpen() && overTimeCount<OVER_MAX){
                 if (count!=3){
@@ -45,7 +47,6 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
                     LOG.I("请求服务器上传."+ count);
                 }
 
-                buffer = ByteBuffer.allocate(Parse.buffSize);//新建数据块
                 buffer.clear();
                 address = channel.receive(buffer);
                 if (  address != null && address.equals(element.toAddress)){
@@ -55,20 +56,28 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
                     }else if (buffer.limit()>8){
                         //数据分析:
                         sendCount = buffer.getLong();
-                        if (sendCount == -1L){
-                            //传输结束
-                            //判断文件MD5是否正确,不正确重新传输.
-                            String md5 = MD5Util.getFileMD5String(element.downloadFileTemp.toFile());
-                            if (md5.equalsIgnoreCase(element.downloadFileMD5)){
-                                //返回
-                                LOG.I("下载完成 - "+ md5 + element.downloadFileTemp);
-                                break;
-                            }
-                        }else if (sendCount == (recvCount+1)){
+                       if (sendCount == (recvCount+1)){
                             //接收数据
                             position = buffer.getLong();
-                            fileChannel.write(buffer,position,null,this);
+                           Future<Integer> ops = fileChannel.write(buffer,position);
+                           while (!ops.isDone());
+                           LOG.I(position+" - "+ ops.get());
+                           if (ops.get()==0){
+                               //传输结束
+
+                               //判断文件MD5是否正确,不正确重新传输.
+                               String md5 = MD5Util.getFileMD5String(element.downloadFileTemp.toFile());
+                               LOG.I("下载完成 - 文件MD5:"+ md5 +" , 源MD5" +element.downloadFileMD5);
+                               if (md5.equalsIgnoreCase(element.downloadFileMD5)){
+                                   //跳出循环
+                                   break;
+                               }else{
+                                   recvCount = -1;
+                                   LOG.I("请求重传,数据异常.");
+                               }
+                           }
                         }
+
                         //回执
                         sendbuf.clear();
                         recvCount=sendCount;

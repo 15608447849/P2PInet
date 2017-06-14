@@ -78,28 +78,26 @@ public class DataUpload extends DataImp{
                 if (overTimeCount == OVER_INIT){ //读取本地文件
                     sendbuf.clear();
                     sendbuf.putLong(sendCount); //次数 -1数据流结束
-                    if (sendCount != -1){
-                        sendbuf.putLong(position);//下标
-                        //数据
-                        ops = fileChannel.read(sendbuf,position);
-                        try {
-                            while (!ops.isDone());
-                            readLength = ops.get();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            readLength = 0L;
-                        }
-                        LOG.I("次数: "+ sendCount+" position == "+ position);
-                        if (readLength != 0){
+                    sendbuf.putLong(position);//下标
+                    //数据
+                    ops = fileChannel.read(sendbuf,position);
+                    while (!ops.isDone());
+                    readLength = ops.get();
+                        LOG.I("当前读取次数: "+ sendCount+" position:"+ position+" 当次读取量:"+readLength);
+                        if (readLength > 0){
                             position+=readLength;
+                            sendCount++;
+                        }else if (readLength == -1){
+                            //读取完毕
+                            LOG.I("文件读取结束.");
+                            //初始化值
+                            sendCount = -1;
+                            position = -1;
                         }
-                    }
-                    sendCount++;
                     sendbuf.flip();
                 }else{
                     sendbuf.rewind();
                 }
-                //LOG.I("发送:"+sendbuf + element.toAddress +" - bendi:"+ channel.getLocalAddress());
                 //写入
                 channel.send(sendbuf,element.toAddress);
                 //接收回执
@@ -107,23 +105,19 @@ public class DataUpload extends DataImp{
                 address = channel.receive(recvbuf);
                 if (address!=null && address.equals(element.toAddress)){
                     recvbuf.flip();
-//                  LOG.I("收到:"+address+" - >"+recvbuf);
                     if (recvbuf.limit()== 8 && recvbuf.getLong() == sendCount){
-                        if (position == fileSize){
-                            sendCount= -1L; //退出 - 通知下载,传输完毕,   如果对方不需要重传,则超时等待结束. 如果对方需要重传, 传送 sendCount++ --> 0; 自动重传.
-                            position = 0L;
-                        }
-                        overTimeCount=OVER_INIT;//继续
+                            overTimeCount=OVER_INIT;//继续
                     }
-
                 }else{
+                    LOG.I("超时 - "+overTimeCount);
                     waitTime();
+                    LOG.I("等待结束");
                     overTimeCount++;
                 }
             }
 
             return sendCount==-1;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }finally {
            closeFileChannel(fileChannel);
