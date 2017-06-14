@@ -15,7 +15,7 @@ public class Parse {
     /**
      * 数据块大小
      */
-    public static final int buffSize = 1500-8-20;
+    public static final int buffSize = 1024+16;
     public static final String _protocol = "protocol";
     public static final String _length = "length";
     public static final String _dataBlock = "dataBlock";

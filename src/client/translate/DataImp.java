@@ -2,9 +2,9 @@ package client.translate;
 
 import utils.LOG;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.channels.AsynchronousFileChannel;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by user on 2017/6/13.
@@ -26,70 +26,48 @@ public abstract class DataImp extends Thread{
     public DataImp(DataElement element) {
         this.element = element;
     }
-
-    public void setAction(TranslateAction action) {
+    public DataImp setAction(TranslateAction action) {
         this.action = action;
+        return this;
     }
-
-
     @Override
     public void run() {
-        //如果未关联
-
-
         //判断类型
         if (element.type == DataElement.UPLOAD){
                 //等待开始上传命令 - 超时结束
                 //收到命令 - 数据传输,超时结束
-            if (waitLoaderNotify()){
-               if (translateUp()){
-                   if (action!=null){
-                       action.translateSuccess(element);
-                   }
-               }else{
-                   if (action!=null){
-                       action.error(new IllegalStateException("数据传输超时"));
-                   }
+            if (!waitingNotify() || !translation()){
+                    if (action!=null){
+                        action.error(new IllegalStateException("数据传输超时超时."));
+                    }
                }
-            }else{
-                if (action!=null){
-                    action.error(new IllegalStateException("超时,未收到下载通知"));
-                }
-            }
+
         }else
         if (element.type == DataElement.DOWNLOAD){
                 //通知开始上传 ->进入数据流接受状态
-                if (translateDown()){
+                if (!translation()){
                     if (action!=null){
-                        action.translateSuccess(element);
-                    }
-                }else{
-                    if (action!=null){
-                        action.error(new IllegalStateException("数据传输超时"));
+                        action.error(new IllegalStateException("数据传输超时获取异常关闭."));
                     }
                 }
-
-        }else{
-            if (action!=null){
-                action.error(new IllegalStateException("未知的数据传输元素类型:"+ element.type));
-            }
-        }
-
-        if (action!=null){
-            action.onOver(element);
+        }if (action!=null){
+            action.onComplete(element);
         }
     }
 
-    protected boolean waitLoaderNotify(){
+    protected boolean waitingNotify(){
         return false;
     }
-    protected boolean translateUp(){
+    protected boolean translation(){
         return false;
     }
 
 
-    protected boolean translateDown(){
-        return false;
+    protected void waitTime(){
+        try {
+            TimeUnit.MICROSECONDS.sleep(overTime * 100);
+        } catch (InterruptedException e) {
+        }
     }
 
     protected void closeFileChannel(AsynchronousFileChannel fileChannel){

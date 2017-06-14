@@ -51,33 +51,9 @@ public class TClientUp extends TranslateThread {
              String filePath = translate.getSourceManager().getHome()+translate.getResource().getPosition();
             element.uploadFilePath = Paths.get(filePath);
             element.uploadFileMD5 = translate.getResource().getMd5Hash();
-
-        final DataImp upload =  new DataUpload(element);
-        upload.setAction(new TranslateAction() {
-
-            @Override
-            public void translateSuccess(DataElement element) {
-                LOG.I("传输成功 - "+ element);
-            }
-
-            @Override
-            public void error(Exception e) {
-                LOG.I("传输错误 - "+ e);
-            }
-
-            @Override
-            public void onOver(DataElement element) {
-                LOG.I("传输完成 - "+ element);
-                synchronized (upload){
-                    upload.notify();
-                }
-            }
-        });
-        upload.start();
-        synchronized (upload){
-            upload.wait();
-        }
-
+            element.fileLength = translate.getResource().getFileLength();
+            new DataUpload(element).start();
+            join();
     }
 
 

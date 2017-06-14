@@ -21,40 +21,8 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
         super(element);
     }
 
-
     @Override
-    protected boolean translateDown() {
-        try {
-            //通知下载
-            element.buf2.clear();
-            element.buf2.put(Command.UDPTranslate.resourceUpload);
-            element.buf2.flip();
-
-            int count = 0;
-            while (count>10){
-                element.buf2.rewind();
-                element.channel.send(element.buf2, element.toAddress);
-                LOG.I("发送上传通知.");
-                element.buf1.clear();
-                SocketAddress address = element.channel.receive(element.buf1);
-                if (address != null) {
-                    element.buf1.flip();
-                    LOG.I("收到上传通知回应. " + address+" - "+ element.buf1);
-                    count++;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            synchronized (this){
-                this.wait(1000);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
+    protected boolean translation() {
         LOG.I("等待接收中.");
         overTimeCount = OVER_INIT;
         position = 0L;
@@ -62,68 +30,81 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
         ByteBuffer sendbuf = element.buf2;
         DatagramChannel channel = element.channel;
         AsynchronousFileChannel fileChannel = null;
-
+        int count = 0;
+        SocketAddress address;
         try{
-            AsynchronousFileChannel.open(element.downloadFileTemp, StandardOpenOption.WRITE);
+            fileChannel = AsynchronousFileChannel.open(element.downloadFileTemp, StandardOpenOption.WRITE);
             ByteBuffer buffer;
             //开始接收
             while (channel.isOpen() && overTimeCount<OVER_MAX){
-                buffer = ByteBuffer.allocate(Parse.buffSize);
-                buffer.clear();
-                SocketAddress address = channel.receive(buffer);
-                if (  address != null){
-                    buffer.flip();
-                    //数据分析:
-                    sendCount = buffer.getLong();
-                    if (sendCount == -1L){
-                        //传输结束
-                        //判断文件MD5是否正确,不正确重新传输.
-                        String md5 = MD5Util.getFileMD5String(element.downloadFileTemp.toFile());
-                        if (md5.equalsIgnoreCase(element.downloadFileMD5)){
-                            //返回
-                            LOG.I("下载完成 - "+ md5 + element.downloadFileTemp);
-                           break;
-                        }
-                    }else if (sendCount == (recvCount+1)){
-                        //接收数据
-                        position = buffer.getLong();
-                        fileChannel.write(buffer,position,null,this);
-                    }
-                        //回执
+                if (count!=3){
                     sendbuf.clear();
-                    recvCount=sendCount;
-                    recvCount++;
-                    sendbuf.putLong(recvCount);
+                    sendbuf.put(Command.UDPTranslate.resourceUpload);
                     sendbuf.flip();
-                    channel.send(sendbuf,element.toAddress);
-                    overTimeCount=OVER_INIT;
+                    channel.send(sendbuf, element.toAddress);
+                    LOG.I("请求服务器上传."+ count);
+                }
+
+                buffer = ByteBuffer.allocate(Parse.buffSize);//新建数据块
+                buffer.clear();
+                address = channel.receive(buffer);
+                if (  address != null && address.equals(element.toAddress)){
+                    buffer.flip();
+                    if (buffer.limit() == 1){
+                        LOG.I("收到上传响应: "+ (++count));
+                    }else if (buffer.limit()>8){
+                        //数据分析:
+                        sendCount = buffer.getLong();
+                        if (sendCount == -1L){
+                            //传输结束
+                            //判断文件MD5是否正确,不正确重新传输.
+                            String md5 = MD5Util.getFileMD5String(element.downloadFileTemp.toFile());
+                            if (md5.equalsIgnoreCase(element.downloadFileMD5)){
+                                //返回
+                                LOG.I("下载完成 - "+ md5 + element.downloadFileTemp);
+                                break;
+                            }
+                        }else if (sendCount == (recvCount+1)){
+                            //接收数据
+                            position = buffer.getLong();
+                            fileChannel.write(buffer,position,null,this);
+                        }
+                        //回执
+                        sendbuf.clear();
+                        recvCount=sendCount;
+                        recvCount++;
+                        sendbuf.putLong(recvCount);
+                        sendbuf.flip();
+                        channel.send(sendbuf,element.toAddress);
+                        overTimeCount=OVER_INIT;
+                    }
+
                 }
                 else{
-//                    overTimeCount++;
-                    synchronized (this){
-                        this.wait(overTime);
-                    }
+                   waitTime();
+                   overTimeCount++;
                 }
             }
             closeFileChannel(fileChannel);
             boolean f =  overTimeCount<OVER_MAX && element.downloadFileTemp.toFile().renameTo(element.downloadFile.toFile());
-            LOG.I("返回结果 : "+f);
+            LOG.I("下载结果 : "+f);
         }catch (Exception e){
             e.printStackTrace();
         }finally {
            closeFileChannel(fileChannel);
 
         }
-        return super.translateDown();
+        return super.translation();
     }
 
+    long curPos = 0L;
     @Override
     public void completed(Integer integer, Void aVoid) {
-        LOG.I(integer+" ");
+        LOG.I(" position  == " + integer +" 已保存大小 :" + (curPos+=integer) );
     }
 
     @Override
     public void failed(Throwable throwable, Void aVoid) {
-
+        throwable.printStackTrace();
     }
 }

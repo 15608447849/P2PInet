@@ -31,6 +31,7 @@ public class DataElement {
     public Path downloadFile;
     public String downloadFileMD5;
 
+    public long fileLength;
     public DataElement(int type) {
         this.type = type;
     }
