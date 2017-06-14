@@ -60,20 +60,15 @@ public abstract class TranslateThread extends Thread{
                     byte[] data = new byte[byteBuffer.limit()-1];
                     byteBuffer.position(1);
                     byteBuffer.get(data);
-                    SerializeTranslate strans = (SerializeTranslate) Parse.bytes2Sobj(data);
-                    String macStr = NetworkUtil.macByte2String(translate.getMac());
-                    if (macStr.equals(strans.connectTask.getDownloadHostMac())){
-                        translate.setTerminalSocket(strans.connectTask.getUploadHostAddress());
-                    }else if (macStr.equals(strans.connectTask.getUploadHostMac())){
-                        translate.setTerminalSocket(strans.connectTask.getDownloadHostAddress());
-                    }
-                     if (translate.getTerminalSocket()!=null){
-                         translate.setMode(strans.mode);
+                    SerializeTranslate serializeTranslate = (SerializeTranslate) Parse.bytes2Sobj(data);
+                    if (serializeTranslate!=null){
+                        translate.setMode(serializeTranslate.mode);
+                        translate.setTerminalSocket(serializeTranslate.address);
                         //回复服务器
-                         respondServerHeartbeat();
-                         //进入下一步
-                         overTimeCount = OVER_TIME_OVER;
-                     }
+                        respondServerHeartbeat();
+                        //进入下一步
+                        overTimeCount = OVER_TIME_OVER;
+                    }
                 }
             }
             synchronized (this){

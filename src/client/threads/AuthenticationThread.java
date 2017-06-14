@@ -208,7 +208,7 @@ public class AuthenticationThread extends Thread{
                 count = -1;
             }
         }else{
-            LOG.I("超时次数  - "+count);
+//            LOG.I("超时次数  - "+count);
             if (count == OVER_TIME_COUNT){
                 if (temp == CHECK_NAT_INFO){
                     LOG.I("服务器无响应 或 NAT规则阻止一切UDP通讯.");

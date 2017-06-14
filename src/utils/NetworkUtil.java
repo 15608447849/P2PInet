@@ -1,10 +1,16 @@
 package utils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.Inflater;
 
 /**
  * Created by user on 2017/5/22.
@@ -150,11 +156,5 @@ public class NetworkUtil {
      * 4 + 4 = 8
      */
     public static final int MODE_STMM_SYMM = bitwise(Symmetric_NAT,Symmetric_NAT);
-
-
-
-
-
-
 
 }

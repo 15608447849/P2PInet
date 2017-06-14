@@ -5,6 +5,7 @@ import client.obj.SerializeSource;
 import protocol.Command;
 import protocol.Parse;
 import utils.LOG;
+import utils.NetworkUtil;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -68,6 +69,7 @@ public class SocketCommand implements CompletionHandler<Integer,Void>{
             source.setUploaderMac(mac);//设置资源同步发起者MAC
             byte[] sourceArr = Parse.sobj2Bytes(source);//资源
             byte[] length = Parse.int2bytes(sourceArr.length);//长度
+            LOG.E("客户端 - 资源同步对象长度:"+sourceArr.length+" - ");
             ByteBuffer buffer = ByteBuffer.allocate(1+length.length+sourceArr.length);
             buffer.clear();
             buffer.put(Command.Client.synchronizationSource);
@@ -89,6 +91,7 @@ public class SocketCommand implements CompletionHandler<Integer,Void>{
             connTask.setDownloadMac(mac);
             byte[] sourceArr = Parse.sobj2Bytes(connTask);//资源
             byte[] length = Parse.int2bytes(sourceArr.length);//长度
+            LOG.E("客户端 - 连接对象长度:"+sourceArr.length);
             ByteBuffer buffer = ByteBuffer.allocate(1+length.length+sourceArr.length);
             buffer.clear();
             buffer.put(Command.Client.connectSourceClient);//搭桥请求

@@ -47,7 +47,7 @@ public class SocketHandler extends Thread implements CompletionHandler<Integer, 
     @Override
     public void failed(Throwable throwable, ByteBuffer asynchronousSocketChannel) {
          throwable.printStackTrace();
-            manager.reConnection();
+         manager.reConnection();
     }
 
 

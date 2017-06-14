@@ -1,6 +1,7 @@
 package server.imp.threads;
 
 import client.obj.SerializeConnectTask;
+import client.obj.SerializeSource;
 import client.obj.SerializeTranslate;
 import protocol.Command;
 import protocol.Parse;
@@ -262,15 +263,10 @@ public class UDPTemporary extends Thread{
                 //设置服务器中转数据模式
                 modeA = modeB = 3;
             }
-
-            SerializeTranslate trans = new SerializeTranslate();
-            trans.connectTask = connectTask;
             try {
-                trans.mode = modeA;
                 //返回回执. 带了对方的NAT信息,并且,发送了客户端的模式(主动,被动)
-                sendObject(trans,clientANat);
-                trans.mode = modeB;
-                sendObject(trans, clientBNat);
+                sendTranlslate(modeA,clientANat,clientBNat);
+                sendTranlslate(modeB,clientBNat,clientANat);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -287,14 +283,15 @@ public class UDPTemporary extends Thread{
     }
 
     //写对象
-    private void sendObject(Object object,InetSocketAddress address) throws IOException {
+    private void sendTranlslate(int mode, InetSocketAddress sendTo, InetSocketAddress terminalAddress) throws IOException {
+        SerializeTranslate translate = new SerializeTranslate(terminalAddress,mode);
         sendBuf.clear();
         sendBuf.put(Command.UDPTranslate.serverHeartbeatResp);
-        byte[] objBytes =  Parse.sobj2Bytes(object);
+        byte[] objBytes =  Parse.sobj2Bytes(translate);
         LOG.E("UDP - 传输对象长度:"+ objBytes.length);
         sendBuf.put(objBytes);
         sendBuf.flip();
-        channel.send(sendBuf,address);
+        channel.send(sendBuf,sendTo);
     }
 
     private InetSocketAddress getNatAddress(String mac) {
