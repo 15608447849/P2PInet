@@ -37,8 +37,8 @@ public class Main {
             if (args!=null && args.length == 1){
                 launchClient_linux();
             }else{
-                startSource("/aaa.mp4");
-//                launchClient(null);
+//                startSource("/aaa.mp4");
+                launchClient(null);
             }
         }
 
