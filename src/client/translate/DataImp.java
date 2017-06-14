@@ -71,10 +71,10 @@ public abstract class DataImp extends Thread{
     }
 
     protected void closeFileChannel(AsynchronousFileChannel fileChannel){
-        if (fileChannel!=null){
+        if (fileChannel!=null && fileChannel.isOpen()){
             try {
                 fileChannel.close();
-                LOG.I("关闭文件流.");
+                LOG.I("关闭文件流 - "+ fileChannel.isOpen());
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -91,15 +91,17 @@ public class DataUpload extends DataImp{
                             //读取完毕
                             LOG.I("文件读取结束.");
                             //初始化值
-                            sendCount = -1;
-                            position = -1;
+                            sendCount = 0;
+                            position = 0;
                         }
                     sendbuf.flip();
                 }else{
                     sendbuf.rewind();
                 }
                 //写入
-                channel.send(sendbuf,element.toAddress);
+
+                int i = channel.send(sendbuf,element.toAddress);
+
                 //接收回执
                 recvbuf.clear();
                 address = channel.receive(recvbuf);
@@ -109,14 +111,15 @@ public class DataUpload extends DataImp{
                             overTimeCount=OVER_INIT;//继续
                     }
                 }else{
-                    LOG.I("超时 - "+overTimeCount);
+//                    LOG.I("超时 - "+overTimeCount);
                     waitTime();
-                    LOG.I("等待结束");
+
+//                    LOG.I("等待结束");
                     overTimeCount++;
                 }
             }
 
-            return sendCount==-1;
+            return sendCount==0&&position==0;
         } catch (Exception e) {
             e.printStackTrace();
         }finally {

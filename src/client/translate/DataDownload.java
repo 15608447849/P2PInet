@@ -17,7 +17,7 @@ import java.util.concurrent.Future;
 /**
  * Created by user on 2017/6/13.
  */
-public class DataDownload extends DataImp implements CompletionHandler<Integer,Void>{
+public class DataDownload extends DataImp{
     public DataDownload(DataElement element) {
         super(element);
     }
@@ -56,36 +56,40 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
                     }else if (buffer.limit()>8){
                         //数据分析:
                         sendCount = buffer.getLong();
-                       if (sendCount == (recvCount+1)){
+                       if (sendCount == recvCount){
                             //接收数据
                             position = buffer.getLong();
                            Future<Integer> ops = fileChannel.write(buffer,position);
                            while (!ops.isDone());
-                           LOG.I(position+" - "+ ops.get());
+                           LOG.I(sendCount+" --> "+ position+" ---> "+ ops.get());
                            if (ops.get()==0){
                                //传输结束
 
                                //判断文件MD5是否正确,不正确重新传输.
                                String md5 = MD5Util.getFileMD5String(element.downloadFileTemp.toFile());
-                               LOG.I("下载完成 - 文件MD5:"+ md5 +" , 源MD5" +element.downloadFileMD5);
+
                                if (md5.equalsIgnoreCase(element.downloadFileMD5)){
                                    //跳出循环
-                                   break;
+                                   buffer.clear();
+                                   closeFileChannel(fileChannel);
+                                   boolean flag = element.downloadFileTemp.toFile().renameTo(element.downloadFile.toFile());
+                                   LOG.I("下载完成 - 文件MD5:"+ md5 +" , 源MD5" +element.downloadFileMD5+" ,从命名:"+flag);
+                                   return true;
                                }else{
                                    recvCount = -1;
                                    LOG.I("请求重传,数据异常.");
                                }
                            }
+                           //回执
+                           sendbuf.clear();
+                           recvCount++;
+                           sendbuf.putLong(recvCount);
+                           sendbuf.flip();
+                           channel.send(sendbuf,element.toAddress);
+                           overTimeCount=OVER_INIT;
                         }
 
-                        //回执
-                        sendbuf.clear();
-                        recvCount=sendCount;
-                        recvCount++;
-                        sendbuf.putLong(recvCount);
-                        sendbuf.flip();
-                        channel.send(sendbuf,element.toAddress);
-                        overTimeCount=OVER_INIT;
+
                     }
 
                 }
@@ -94,9 +98,9 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
                    overTimeCount++;
                 }
             }
-            closeFileChannel(fileChannel);
-            boolean f =  overTimeCount<OVER_MAX && element.downloadFileTemp.toFile().renameTo(element.downloadFile.toFile());
-            LOG.I("下载结果 : "+f);
+
+
+
         }catch (Exception e){
             e.printStackTrace();
         }finally {
@@ -107,13 +111,5 @@ public class DataDownload extends DataImp implements CompletionHandler<Integer,V
     }
 
     long curPos = 0L;
-    @Override
-    public void completed(Integer integer, Void aVoid) {
-        LOG.I(" position  == " + integer +" 已保存大小 :" + (curPos+=integer) );
-    }
 
-    @Override
-    public void failed(Throwable throwable, Void aVoid) {
-        throwable.printStackTrace();
-    }
 }
