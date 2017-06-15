@@ -93,7 +93,7 @@ public class DataDownload extends DataImp{
                         buffer.put(Command.UDPTranslate.over);
                         buffer.flip();
                         sendDataToAddress(buffer);
-                        closeFileChannel(fileChannel);
+                        LOG.E("通知服务器,结束任务.");
                     }else{
                         LOG.I("请求重传,数据异常.");
                         state = SEND;

@@ -142,8 +142,8 @@ public class DataUpload extends DataImp {
         sendBuf.clear();
         sendBuf.putInt(-1);
         fileChannel.read(sendBuf,element.fileLength,sendBuf,this);
-
         state = RECEIVE;// 接收状态.接收对方回执
+        LOG.E("已发送完毕.");
     }
 
     @Override
@@ -167,6 +167,7 @@ public class DataUpload extends DataImp {
     }
 
     private void receiveData() {
+        LOG.E("接受回执中...");
         ByteBuffer recBuf = ByteBuffer.allocate(1);
         recBuf.clear();
         try {
