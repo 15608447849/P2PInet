@@ -111,7 +111,7 @@ public class Command {
         /**
          * 传输结束
          */
-        public static final byte over = 42;
+        public static final byte over = 43;
     }
 
 }

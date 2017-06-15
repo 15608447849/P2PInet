@@ -175,9 +175,11 @@ public class DataUpload extends DataImp {
             if (address!=null){
                 initOverTime();
                 recBuf.flip();
-                if (recBuf.get(0)==Command.UDPTranslate.send){
+                if (recBuf.get(0) == Command.UDPTranslate.send){
+                    LOG.E(" 重新发送");
                     state = SEND;
                 }else if (recBuf.get(0) == Command.UDPTranslate.over){
+                    LOG.E(" 结束");
                     state = OVER;
                 }
             }else{
