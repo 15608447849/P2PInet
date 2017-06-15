@@ -115,6 +115,7 @@ public class DataDownload extends DataImp{
         try {
             sendDataToAddress(sendBuf);
             state = RECEIVE;
+            LOG.E("请求传输.");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -137,15 +138,17 @@ public class DataDownload extends DataImp{
                     if (recBuf.remaining()<4) continue;
                     count = recBuf.getInt();
                     LOG.I("收到: "+ recBuf+", 计数:"+count);
-                    if (count>0) {
+                    if (count>=0) {
                         fileChannel.write(recBuf, sliceUnitMap.get(count), count, this);
                     }
                     if (count==-1){
+                        LOG.I(sliceUnitMap+"");
                        if (sliceUnitMap.size()>0){
                            state = SEND;
                        }else{
                            state = OVER;
                        }
+                       break;
                     }
                 }
             }

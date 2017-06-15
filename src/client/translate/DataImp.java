@@ -28,6 +28,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
     public long position = 0L;//当前发送下标
     public byte cmd = 0;//命令
     public int mtuValue;
+    public static final int INDEX_LEN = 4;
     public HashMap<Integer,Long> sliceUnitMap = null;
 
     public static final int NODE = 0;
@@ -128,7 +129,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
         return element.channel;
     }
     protected void setSliceMap(){
-        sliceUnitMap = cellCount(element.fileLength,mtuValue);
+        sliceUnitMap = cellCount(element.fileLength,mtuValue-INDEX_LEN);
     }
     @Override
     public void failed(Throwable throwable, Object o) {
