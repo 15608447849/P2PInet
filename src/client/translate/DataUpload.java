@@ -4,132 +4,183 @@ import protocol.Command;
 import protocol.Parse;
 import utils.LOG;
 
-import javax.xml.ws.soap.MTOM;
 import java.io.IOException;
 import java.net.SocketAddress;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
+import java.nio.channels.CompletionHandler;
 import java.nio.channels.DatagramChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.Future;
 
 /**
  * Created by user on 2017/6/13.
+ * 确定 MTU
+ * 确定分片信息  :    mtu = 1400 ,文件大小: 14008 ->  14008/1400 = 10次 余下8byte, > 11次 ,每次的下标: (0,0) (1,1400) ....(10,1400*10),(11,(1400*10)+8)
  */
-public class DataUpload extends DataImp{
+public class DataUpload extends DataImp {
     public DataUpload(DataElement element) {
         super(element);
     }
 
     @Override
-    protected boolean waitingNotify() {
+    protected void sureMTU() {
+        initOverTime();
+        int currentMTU = Parse.DATA_BUFFER_MAX_ZONE;//MTU最大单位数量.
+        ByteBuffer buf = ByteBuffer.allocate(currentMTU);
+        SocketAddress address = null;
+        while(isNotOverTime()){
+
+            if (currentMTU>Parse.UDP_DATA_MIN_BUFFER_ZONE){
+                buf.clear();
+                for (int i = 0;i<currentMTU;i++){
+                    buf.put(Command.UDPTranslate.mtuCheck);
+                }
+                buf.flip();
+                try {
+                    sendDataToAddress(buf);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                currentMTU--;
+            }
+            waitTime();
+            //接收
+            buf.clear();
+            try {
+                address = getChannel().receive(buf);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (address!=null){
+                buf.flip();
+                LOG.I("确定MTU大小: "+ buf);
+                if (buf.get(0) == Command.UDPTranslate.mtuCheck){
+                    mtuValue = buf.limit();
+                    LOG.I("MTU: "+ mtuValue);
+                    return;
+                }
+            }else{
+                overTimeCount++;
+            }
+            waitTime();
+        }
+
+
+    }
+
+
+    @Override
+    protected void slice() {
+        super.slice();
         try {
-            overTimeCount = OVER_INIT;
-            LOG.I("确定MTU大小.");
-            ByteBuffer checkBuffer = ByteBuffer.allocate(Parse.DATA_BUFFER_MAX_ZONE);
-            while (overTimeCount< OVER_MAX){
-                checkBuffer.clear();
-                SocketAddress address  = element.channel.receive(checkBuffer);
-
-                if (address != null && address.equals(element.toAddress)){
-                    checkBuffer.flip();
-                    LOG.I("收到数据 - ."+checkBuffer);
-                    cmd = checkBuffer.get(0);
-                    if (cmd == Command.UDPTranslate.mtuCheck){
-                        //响应
-                        checkBuffer.rewind();
-                        element.channel.send(checkBuffer,address);
-                        overTimeCount = OVER_INIT;
+            LOG.I("等待客户端分片单元格.");
+            initOverTime();
+            ByteBuffer buffer = ByteBuffer.allocate(1);
+            SocketAddress address;
+            while (isNotOverTime()){
+                buffer.clear();
+                address = getChannel().receive(buffer);
+                if (address!=null){
+                    buffer.flip();
+                    if (buffer.get(0) == Command.UDPTranslate.sliceSure){
+                        LOG.I("对方 -" + address+" ,切片完成. 开始传输数据.");
+                        return;
                     }
-                    if (cmd == Command.UDPTranslate.mtuSure){
-                        int mtuValue = checkBuffer.getInt();
-                        element.buf1 = ByteBuffer.allocate(mtuValue);
-                        LOG.E("确定 MTU : "+ mtuValue);
-                        return true;
-                    }
-
                 }else{
-                    waitTime();
+                    waitTime(1);
                     overTimeCount++;
                 }
+            }
+            LOG.I("超时.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void translation() {
+        try {
+            initOverTime();
+            state = RECEIVE;
+            //传输数据 - 异步发送
+            AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(element.uploadFilePath, StandardOpenOption.READ);
+            while (getChannel().isOpen() && overTimeCount<OVER_MAX && state!=OVER){
+                if (state == SEND){
+                    sendData(fileChannel);
+                }
+                if (state == RECEIVE){
+                    receiveData();
+                }
+                if (state == OVER){
+                    LOG.I("传输完成");
+                    closeFileChannel(fileChannel);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+    private void sendData(AsynchronousFileChannel fileChannel) {
+        if (fileChannel==null || !fileChannel.isOpen()){
+            return;
+        }
+        ByteBuffer sendBuf = null;
+        // 一毫秒 发 10次, 每次1k -> 1000 k/s ?
+        for (Integer count:sliceUnitMap.keySet()){
+            sendBuf = ByteBuffer.allocate(mtuValue);
+            sendBuf.clear();
+            sendBuf.putInt(count);
+            fileChannel.read(sendBuf,sliceUnitMap.get(count),sendBuf,this);
+            waitTime();
+        }
+        //发送完成标识
+        sendBuf.clear();
+        sendBuf.putInt(-1);
+        sendBuf.flip();
+        fileChannel.read(sendBuf,element.fileLength,sendBuf,this);
+
+        state = RECEIVE;// 接收状态.接收对方回执
+    }
+
+    @Override
+    public void completed(Integer integer, Object o) {
+        try {
+            //发送.
+            sendDataToAddress((ByteBuffer) o);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void receiveData() {
+        ByteBuffer recBuf = ByteBuffer.allocate(1);
+        recBuf.clear();
+        try {
+            SocketAddress address = getChannel().receive(recBuf);
+            if (address!=null){
+                initOverTime();
+                recBuf.flip();
+                if (recBuf.get(0)==Command.UDPTranslate.send){
+                    state = SEND;
+                }else if (recBuf.get(0) == Command.UDPTranslate.over){
+                    state = OVER;
+                }
+            }else{
+                waitTime(1);//休眠一秒 - > 最大30次 => 超时时间30秒
+                overTimeCount++;
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return super.waitingNotify();
     }
 
-    @Override
-    protected boolean translation() {
 
-        LOG.I("上传数据中.");
-        overTimeCount = OVER_INIT;
-        position = 0L;
-        sendCount=0L;
 
-        ByteBuffer sendbuf = element.buf1;
-        ByteBuffer recvbuf = element.buf2;
-        DatagramChannel channel = element.channel;
-        long fileSize = element.uploadFilePath.toFile().length();
 
-        //获取文件 管道
-        AsynchronousFileChannel fileChannel = null;
-        Future<Integer> ops ;
-        long readLength ;
-        SocketAddress address;
-        try {
-            fileChannel = AsynchronousFileChannel.open(element.uploadFilePath, StandardOpenOption.READ);
-            //开始写入
 
-            while (channel.isOpen() && overTimeCount<OVER_MAX){
-
-                if (overTimeCount == OVER_INIT){ //读取本地文件
-                    sendbuf.clear();
-                    sendbuf.putLong(sendCount); //次数 -1数据流结束
-                    sendbuf.putLong(position);//下标
-                    //数据
-                    ops = fileChannel.read(sendbuf,position);
-                    while (!ops.isDone());
-                    readLength = ops.get();
-                        //LOG.I("当前读取次数: "+ sendCount+" position:"+ position+" 当次读取量:"+readLength);
-                        if (readLength > 0){
-                            position+=readLength;
-                            sendCount++;
-                        }else if (readLength == -1){
-                            //读取完毕
-                            LOG.I("文件读取结束.");
-                            //初始化值
-                            sendCount = 0;
-                            position = 0;
-                        }
-                    sendbuf.flip();
-                }else{
-                    sendbuf.rewind();
-                }
-                //写入
-
-                int i = channel.send(sendbuf,element.toAddress);
-
-                //接收回执
-                recvbuf.clear();
-                address = channel.receive(recvbuf);
-                if (address!=null && address.equals(element.toAddress)){
-                    recvbuf.flip();
-                    if (recvbuf.limit()== 8 && recvbuf.getLong() == sendCount){
-                            overTimeCount=OVER_INIT;//继续
-                    }
-                }else{
-                    waitTime();
-                    overTimeCount++;
-                }
-            }
-
-            return sendCount==0&&position==0;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }finally {
-           closeFileChannel(fileChannel);
-        }
-        return super.translation();
-    }
 }

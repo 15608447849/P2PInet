@@ -41,8 +41,7 @@ public class TClientUp extends TranslateThread {
         LOG.I(TAG+ "数据上传....");
         //创建数据上传对象
         DataElement element = new DataElement(DataElement.UPLOAD);
-            element.buf1 = translate.getBuffer();//数据发送
-            element.buf2 =  ByteBuffer.allocate(8);//数据接受
+
             element.channel = translate.getChannel();//当前通道对象.
             element.toAddress = translate.getTerminalSocket();//对端
              String filePath = translate.getSourceManager().getHome()+translate.getResource().getPosition();

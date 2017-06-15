@@ -1,5 +1,6 @@
 package client.translate;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
@@ -18,10 +19,6 @@ public class DataElement {
 
     public DatagramChannel channel ;//当前通道对象.
     public InetSocketAddress toAddress ;//对端
-
-    public ByteBuffer buf1;//1500-20-8
-    public ByteBuffer buf2;//8字节
-
     //上传文件路径
     public Path uploadFilePath;
     //文件完整的MD5值
@@ -36,7 +33,9 @@ public class DataElement {
         this.type = type;
     }
 
-
+    public void sendBuffer(ByteBuffer buffer) throws IOException {
+        channel.send(buffer,toAddress);
+    }
 
 
 

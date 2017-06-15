@@ -102,8 +102,16 @@ public class Command {
         /**
          * 确定MTU
          */
-        public static final byte mtuSure = 41;
+        public static final byte sliceSure = 41;
 
+        /**
+         * 发送数据
+         */
+        public static final byte send = 42;
+        /**
+         * 传输结束
+         */
+        public static final byte over = 42;
     }
 
 }
