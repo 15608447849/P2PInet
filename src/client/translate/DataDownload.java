@@ -32,10 +32,12 @@ public class DataDownload extends DataImp{
                 buffer.clear();
                 address = getChannel().receive(buffer);
                 if (address!=null){
+                    buffer.flip();
                     LOG.I("确定MTU: "+ buffer);
                     if (buffer.get(0) == Command.UDPTranslate.mtuCheck){
                         //返回信息.
                         mtuValue = buffer.limit();
+                        LOG.I("MTU : "+ mtuValue);
                         sendDataToAddress(buffer);
                         return;
                     }
