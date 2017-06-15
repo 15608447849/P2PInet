@@ -139,10 +139,10 @@ public class DataUpload extends DataImp {
             waitTime();
         }
         //发送完成标识
-        sendBuf.clear();
+        /*sendBuf.clear();
         sendBuf.putInt(-1);
         sendBuf.flip();
-        fileChannel.read(sendBuf,element.fileLength,sendBuf,this);
+        fileChannel.read(sendBuf,element.fileLength,sendBuf,this);*/
 
         state = RECEIVE;// 接收状态.接收对方回执
     }
@@ -150,8 +150,14 @@ public class DataUpload extends DataImp {
     @Override
     public void completed(Integer integer, Object o) {
         try {
+
+            ByteBuffer sendBuf = (ByteBuffer) o;
+            sendBuf.flip();
+            int count =sendBuf.getInt();
+            LOG.I(" 发送: "+sendBuf+" ,长度:"+integer+" - count:"+ count+" ,position: "+sliceUnitMap.get(count));
+            sendBuf.rewind();
             //发送.
-            sendDataToAddress((ByteBuffer) o);
+            sendDataToAddress(sendBuf);
         } catch (IOException e) {
             e.printStackTrace();
         }

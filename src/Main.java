@@ -33,6 +33,7 @@ public class Main {
 
 
     public static void main(String[] args) {
+
         if (args!=null && args.length==2){
             String command = args[0];
             TCPserverIp = args[1];
@@ -46,14 +47,14 @@ public class Main {
             if (args!=null && args.length == 1){
                 launchClient_linux();
             }else{
-//                startSource("/psb.jpg");
-                startSource("/def.mp4");
+                startSource("/psb.jpg");
+//                startSource("/def.mp4");
 //                launchClient(null);
             }
         }
 
 
-//            test();
+//        test3();
 //            launchServer();
 //        launchUdpServer();
 //            launchClient(null);
@@ -198,7 +199,15 @@ public class Main {
         LOG.I( "byte[] -> int : "+ i);
     }
 
+    private static void test3(){
+       ByteBuffer buffer = ByteBuffer.allocate(19);
+       buffer.putInt(1560);
+       LOG.I(buffer+"");
 
+       buffer.flip();
+       int i = buffer.getInt();
+       LOG.I(i+" - "+ buffer);
+    }
 
 
 

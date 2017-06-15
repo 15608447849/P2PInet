@@ -109,7 +109,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
             map.put(index, (long) (index*mtu));
         }
         if (remainder>0){
-            map.put(count+1, count*mtu+mtu+remainder);
+            map.put(count, count*mtu+remainder);
         }
         return map;
     }

@@ -56,6 +56,7 @@ public class DataDownload extends DataImp{
         buffer.flip();
         try {
             sendDataToAddress(buffer);
+            LOG.I("切片信息:"+sliceUnitMap);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -129,9 +130,11 @@ public class DataDownload extends DataImp{
                 recBuf = ByteBuffer.allocate(mtuValue);
                 recBuf.clear();
                 address = channel.receive(recBuf);
-                if (address!=null){
+                if (address!=null ){
                     recBuf.flip();
+                    if (recBuf.remaining()<4) continue;
                     count = recBuf.getInt();
+                    LOG.I("收到: "+ recBuf+", 计数:"+count);
                     if (count>0) {
                         fileChannel.write(recBuf, sliceUnitMap.get(count), count, this);
                     }
