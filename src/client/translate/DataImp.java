@@ -39,6 +39,8 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
     public static final int OVER = 3;
 
     public int state = NODE;
+    //第一次传输
+    public boolean isOnes = true;
 
     public DataImp(DataElement element) {
         this.element = element;

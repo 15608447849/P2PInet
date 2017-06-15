@@ -23,6 +23,7 @@ public class DataDownload extends DataImp{
 
     @Override
     protected void sureMTU() {
+        LOG.I("检测MTU值.");
         try {
             //接收MTU BUFFER
             initOverTime();
@@ -52,7 +53,7 @@ public class DataDownload extends DataImp{
     protected void slice() {
         super.slice();
         //发送切片成功,开始接收数据
-        ByteBuffer buffer = ByteBuffer.allocate(1);
+        ByteBuffer buffer = ByteBuffer.allocate(mtuValue);
         buffer.clear();
         buffer.put(Command.UDPTranslate.sliceSure);
         buffer.flip();
@@ -64,9 +65,13 @@ public class DataDownload extends DataImp{
         }
     }
 
+
+
+
     @Override
     protected void translation() {
         initOverTime();
+
         try {
             initOverTime();
             state = SEND;
@@ -111,20 +116,17 @@ public class DataDownload extends DataImp{
 
 
     private void querySend() {
-
-        ByteBuffer sendBuf = ByteBuffer.allocate(1);
-        sendBuf.clear();
-        sendBuf.put(Command.UDPTranslate.send);
-        sendBuf.flip();
-        try {
-            sendDataToAddress(sendBuf);
-            state = RECEIVE;
-            byte[] dp = Parse.sobj2Bytes(sliceUnitMap);
-            LOG.E("分片数据字节数: "+ dp.length);
-            LOG.E("请求传输.发送分片数据");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            ByteBuffer sendBuf = ByteBuffer.allocate(1);
+            sendBuf.clear();
+            sendBuf.put(Command.UDPTranslate.send);
+            sendBuf.flip();
+            try {
+                sendDataToAddress(sendBuf);
+                state = RECEIVE;
+                LOG.E("请求传输");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
     }
 
 
@@ -147,9 +149,8 @@ public class DataDownload extends DataImp{
                     recBuf.flip();
                     if (recBuf.remaining()<4) continue;
                     count = recBuf.getInt();
-                    LOG.I("收到: "+ recBuf+", 计数:"+count);
                     if (count>=0 && sliceUnitMap.containsKey(count)) {
-                        fileChannel.write(recBuf, sliceUnitMap.get(count), count, this);
+                        fileChannel.write(recBuf, sliceUnitMap.get(count), recBuf, this);
 
                     }else if (count==-1){
                      state = OVER;
@@ -170,8 +171,16 @@ public class DataDownload extends DataImp{
 
     @Override
     public void completed(Integer integer, Object o) {
-        //已写入
         sliceUnitMap.remove(o); //移除
+        LOG.I("写入buffer: "+ o);
+        //已写入
+        ByteBuffer buffer = (ByteBuffer) o;
+        buffer.rewind();
+        try {
+            sendDataToAddress(buffer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         if (sliceUnitMap.size() == 0){
             state = OVER;
         }

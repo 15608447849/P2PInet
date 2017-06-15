@@ -12,6 +12,7 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.DatagramChannel;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.concurrent.Future;
 
 /**
@@ -26,6 +27,7 @@ public class DataUpload extends DataImp {
 
     @Override
     protected void sureMTU() {
+        LOG.I("检测MTU值.");
         initOverTime();
         int currentMTU = Parse.DATA_BUFFER_MAX_ZONE;//MTU最大单位数量.
         ByteBuffer buf = ByteBuffer.allocate(currentMTU);
@@ -45,7 +47,7 @@ public class DataUpload extends DataImp {
                 }
                 currentMTU--;
             }
-            waitTime();
+            waitTime2();
             //接收
             buf.clear();
             try {
@@ -99,9 +101,11 @@ public class DataUpload extends DataImp {
         }
     }
 
+
     @Override
     protected void translation() {
         try {
+            new Thread(REC).start();
             initOverTime();
             state = RECEIVE;
             //传输数据 - 异步发送
@@ -123,12 +127,44 @@ public class DataUpload extends DataImp {
         }
     }
 
-
+    private ArrayList<Integer> receiveSuccessIndexList = new ArrayList<>();
+    final Runnable REC = new Runnable() {
+        @Override
+        public void run() {
+            ByteBuffer buffer = ByteBuffer.allocate(4);
+            int index = -1;
+            SocketAddress address = null;
+            while (true){
+                if (state == SEND){
+                    try {
+                        buffer.clear();
+                        address = getChannel().receive(buffer);
+                        if (address!=null ){
+                            buffer.flip();
+                            index = buffer.getInt();
+                            if (index>=0){
+                                receiveSuccessIndexList.add(index);
+                                LOG.E("成功 - "+ index);
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    };
 
     private void sendData(AsynchronousFileChannel fileChannel) {
         if (fileChannel==null || !fileChannel.isOpen()){
             return;
         }
+        //处理需要发送的分片
+        for (int index : receiveSuccessIndexList){
+            sliceUnitMap.remove(index);
+            LOG.E("移除 - "+ index);
+        }
+
         ByteBuffer sendBuf = null;
         long time = System.currentTimeMillis();
         // 一毫秒 发 10次, 每次1kb -> 10 k/毫秒  = 10*1000 => 10000 kb/s ?
