@@ -49,7 +49,7 @@ public class DataDownload extends DataImp{
                     }
                     sendbuf.flip();
                     channel.send(checkBuffer, element.toAddress);
-                    LOG.I("确定MTU - "+ mtuValue);
+                    LOG.I("发送 MTU -> "+ mtuValue);
                     mtuValue--;
                     continue;
                 }
@@ -58,12 +58,19 @@ public class DataDownload extends DataImp{
                 address = channel.receive(buffer);
                 if (  address != null && address.equals(element.toAddress)){
                     buffer.flip();
-                    if (buffer.limit() == 4){
-                       mtuValue = buffer.getInt();
-                        LOG.I("收到MTU确定,设置缓冲区 MTU == "+mtuValue);
-                        checkBuffer=null;
+                    cmd = buffer.get(0);
+                    if (cmd == Command.UDPTranslate.mtuCheck){
+                       mtuValue =buffer.limit();
+                        LOG.I("收到MTU响应,设置缓冲区 MTU : "+mtuValue);
+                        checkBuffer.clear();
+                        checkBuffer.put(Command.UDPTranslate.mtuSure);
+                        checkBuffer.putInt(mtuValue);
+                        checkBuffer.flip();
+                        channel.send(checkBuffer,element.toAddress);
+                        checkBuffer = null;
                         sendbuf = ByteBuffer.allocate(mtuValue);
-                    }else if (buffer.limit()>8){
+                    }else if (buffer.remaining()>8){
+                        buffer.rewind();
                         //数据分析:
                         sendCount = buffer.getLong();
                        if (sendCount == recvCount){
@@ -95,10 +102,7 @@ public class DataDownload extends DataImp{
                                channel.send(sendbuf,element.toAddress);
                                overTimeCount=OVER_INIT;
                         }
-
-
                     }
-
                 }
                 else{
                    waitTime();

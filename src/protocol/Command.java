@@ -99,7 +99,10 @@ public class Command {
          * 检测MTU
          */
         public static final byte mtuCheck = 40;
-
+        /**
+         * 确定MTU
+         */
+        public static final byte mtuSure = 41;
 
     }
 

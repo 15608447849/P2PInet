@@ -4,6 +4,7 @@ import protocol.Command;
 import protocol.Parse;
 import utils.LOG;
 
+import javax.xml.ws.soap.MTOM;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -29,17 +30,21 @@ public class DataUpload extends DataImp{
             while (overTimeCount< OVER_MAX){
                 checkBuffer.clear();
                 SocketAddress address  = element.channel.receive(checkBuffer);
-    //                LOG.I("收到数据 - ."+address);
+
                 if (address != null && address.equals(element.toAddress)){
                     checkBuffer.flip();
-
-                    if (checkBuffer.get(0) == Command.UDPTranslate.mtuCheck){
-                        LOG.E("MTU : "+checkBuffer.limit());
-                        checkBuffer.clear();
-                        checkBuffer.putInt(checkBuffer.limit());
-                        checkBuffer.flip();
+                    LOG.I("收到数据 - ."+checkBuffer);
+                    cmd = checkBuffer.get(0);
+                    if (cmd == Command.UDPTranslate.mtuCheck){
                         //响应
+                        checkBuffer.rewind();
                         element.channel.send(checkBuffer,address);
+                        overTimeCount = OVER_INIT;
+                    }
+                    if (cmd == Command.UDPTranslate.mtuSure){
+                        int mtuValue = checkBuffer.getInt();
+                        element.buf1 = ByteBuffer.allocate(mtuValue);
+                        LOG.E("确定 MTU : "+ mtuValue);
                         return true;
                     }
 
