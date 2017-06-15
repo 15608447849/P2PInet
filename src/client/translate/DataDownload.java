@@ -80,9 +80,13 @@ public class DataDownload extends DataImp{
                     receiveData(fileChannel);
                 }
                 if (state == OVER){
+                    if (sliceUnitMap.size()>0){
+                        LOG.I(" 当前剩余分片:"+sliceUnitMap);
+                        state = SEND;
+                        continue;
+                    }
                     LOG.I("传输完成");
                     //判断文件md5
-
                     String md5 = MD5Util.getFileMD5String(element.downloadFileTemp.toFile());
                     if (md5.equalsIgnoreCase(element.downloadFileMD5)){
                         closeFileChannel(fileChannel);
@@ -115,11 +119,15 @@ public class DataDownload extends DataImp{
         try {
             sendDataToAddress(sendBuf);
             state = RECEIVE;
-            LOG.E("请求传输.");
+            byte[] dp = Parse.sobj2Bytes(sliceUnitMap);
+            LOG.E("分片数据字节数: "+ dp.length);
+            LOG.E("请求传输.发送分片数据");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
     private void receiveData(AsynchronousFileChannel fileChannel) {
         if (fileChannel==null || !fileChannel.isOpen()){
             return;
@@ -129,26 +137,28 @@ public class DataDownload extends DataImp{
             DatagramChannel channel = getChannel();
             ByteBuffer recBuf = null;
             int count;
-            while (channel.isOpen()){
+            long overTime = System.currentTimeMillis();
+            while (channel.isOpen()&&state==RECEIVE){
                 recBuf = ByteBuffer.allocate(mtuValue);
                 recBuf.clear();
                 address = channel.receive(recBuf);
                 if (address!=null ){
+                    overTime = System.currentTimeMillis();//重置超时时间
                     recBuf.flip();
                     if (recBuf.remaining()<4) continue;
                     count = recBuf.getInt();
                     LOG.I("收到: "+ recBuf+", 计数:"+count);
-                    if (count>=0) {
+                    if (count>=0 && sliceUnitMap.containsKey(count)) {
                         fileChannel.write(recBuf, sliceUnitMap.get(count), count, this);
+
+                    }else if (count==-1){
+                     state = OVER;
                     }
-                    if (count==-1){
-                        LOG.I(sliceUnitMap+"");
-                       if (sliceUnitMap.size()>0){
-                           state = SEND;
-                       }else{
-                           state = OVER;
-                       }
-                       break;
+                }
+                else{
+                    if((System.currentTimeMillis()-overTime)> 20000 && sliceUnitMap.size()>0){
+                        state = SEND;
+                        LOG.E("接受数据超时,请求服务器重新发送.");
                     }
                 }
             }

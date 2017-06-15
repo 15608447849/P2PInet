@@ -1,5 +1,6 @@
 package client.translate;
 
+import protocol.Parse;
 import utils.LOG;
 
 import java.io.IOException;
@@ -17,7 +18,8 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
 
    public static final int OVER_MAX = 30; //超时时间 最大次数
    public static final int OVER_INIT = 0; //初始化
-   public static final int OVER_TIME_ONCE = 100000; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns)
+   public static final int OVER_TIME_ONCE = 1000000; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1毫秒
+   public static final int OVER_TIME_ONCE_2= 10000; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1/10毫秒
 
     protected DataElement element;
     protected TranslateAction action;
@@ -27,7 +29,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
     public long recvCount = 0L; //当前发送次数
     public long position = 0L;//当前发送下标
     public byte cmd = 0;//命令
-    public int mtuValue;
+    public int mtuValue = Parse.UDP_DATA_MIN_BUFFER_ZONE;
     public static final int INDEX_LEN = 4;
     public HashMap<Integer,Long> sliceUnitMap = null;
 
@@ -72,6 +74,12 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
     protected void waitTime(){
         try {
             TimeUnit.MICROSECONDS.sleep(OVER_TIME_ONCE);
+        } catch (InterruptedException e) {
+        }
+    }
+    protected void waitTime2(){
+        try {
+            TimeUnit.MICROSECONDS.sleep(OVER_TIME_ONCE_2);
         } catch (InterruptedException e) {
         }
     }
