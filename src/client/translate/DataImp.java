@@ -22,7 +22,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
 
 
    public static final int OVER_TIME_ONCE = 200; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1毫秒
-   public static final int OVER_TIME_ONCE_2 = 10000; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1/10毫秒
+   public static final int OVER_TIME_ONCE_2 = 2300; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1/10毫秒
     public static final int OVER_MAX = 10; //超时时间 最大次数
     protected int overTimeCount = 0;//超时次数
     protected DataElement element;
