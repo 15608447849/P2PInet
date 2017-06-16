@@ -187,7 +187,6 @@ public class DataUpload extends DataImp {
                 }else
                 if (recBuf.get(0) == Command.UDPTranslate.receiveSlice){
                     recBuf.position(1);
-                    LOG.I(" 收到 回执信息:"+recBuf);
                     while (recBuf.remaining()>=4){
                         receiveSuccessIndexList.add(recBuf.getInt());
                     }

@@ -73,7 +73,7 @@ public class DataDownload extends DataImp{
         buffer.flip();
 
             sendDataToAddress(buffer);
-            LOG.I("切片大小:"+sliceUnitMap+",已发送切片成功应答.");
+            LOG.I("切片大小:"+sliceUnitMap.size() +",已发送切片成功应答.");
 
     }
 
@@ -116,6 +116,7 @@ public class DataDownload extends DataImp{
         if (sliceUnitMap.isEmpty() || position==element.fileLength ){
             if (MD5Util.isSaveMD5(element.downloadFileTemp.toFile(),element.downloadFileMD5)){
                 closeFileChannel(fileChannel);
+                waitTime(1);
                 //通知结束
                 ByteBuffer buffer = ByteBuffer.allocate(1);
                 buffer.clear();
@@ -126,7 +127,7 @@ public class DataDownload extends DataImp{
                 return;
             }
         }
-        LOG.I("剩余分片 :  ["+sliceUnitMap.keySet()+"]\n数量:"+sliceUnitMap.size() +"\n当前进度值:"+position+",文件实际大小:"+element );
+        LOG.I("剩余分片 :  ["+sliceUnitMap.keySet()+"]\n数量:"+sliceUnitMap.size() +"\n当前进度值:"+position+",文件实际大小:"+element.fileLength);
         state = SEND;
     }
 
