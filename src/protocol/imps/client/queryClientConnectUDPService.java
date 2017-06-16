@@ -4,6 +4,7 @@ import client.threads.Translate;
 import client.obj.SerializeConnectTask;
 import client.socketimp.PortManager;
 import client.socketimp.SocketManager;
+import client.threads.TranslateThread;
 import protocol.Execute;
 import protocol.Intent;
 import protocol.Parse;
@@ -56,6 +57,7 @@ public class queryClientConnectUDPService implements Execute.IAction {
             translate.setLocalSocket(localSocket);
             translate.setServerSocket(serverSocket);
             translate.setSourceManager(manager.sourceManager);
+            translate.setTranslateManager(manager.translateManager);
             translate.start();
             //结束
         } catch (Exception e) {

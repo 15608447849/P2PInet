@@ -1,6 +1,8 @@
 package client.threads;
 
 import client.obj.SerializeSource;
+import client.socketimp.SocketManager;
+import client.socketimp.TranslateManager;
 import client.sourceimp.SourceManager;
 
 import java.io.IOException;
@@ -36,7 +38,8 @@ public class Translate {
     private boolean connectSuccess;
     //资源管理器
     private SourceManager sourceManager;
-
+    //socket 管理器
+    private TranslateManager translateManager;
 
     public Translate(int holderType) {
         this.holderType = holderType;
@@ -122,6 +125,14 @@ public class Translate {
         this.sourceManager = sourceManager;
     }
 
+    public TranslateManager getTranslateManager() {
+        return translateManager;
+    }
+
+    public void setTranslateManager(TranslateManager translateManager) {
+        this.translateManager = translateManager;
+    }
+
     //向指定地址发送消息
     public void sendMessageToTarget(ByteBuffer buf,InetSocketAddress address,DatagramChannel channel) throws IOException {
         if (buf!=null && buf.limit()>0 && address!=null && channel!=null){
@@ -139,9 +150,12 @@ public class Translate {
         }
     }
 
-    public void start() {
-        if (holderType==HOLDER_CLIENT_UP) new TClientUp(this);
-        else if (holderType == HOLDER_CLIENT_DOWN) new TClientLoad(this);
+    public TranslateThread start() {
+        TranslateThread thread = null;
+        if (holderType==HOLDER_CLIENT_UP)  thread = new TClientUp(this);
+        else if (holderType == HOLDER_CLIENT_DOWN) thread = new TClientLoad(this);
+        if (translateManager!=null) translateManager.add(thread);
+        return thread;
     }
     public void setConnectSuccess(){
         connectSuccess = true;

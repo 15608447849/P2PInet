@@ -198,7 +198,8 @@ public abstract class TranslateThread extends Thread{
                 e.printStackTrace();
             }
         }
-        LOG.I("关闭连接: " + this);
+        translate.getTranslateManager().remove(this);
+        LOG.I("关闭连接: " + this + " - "+ translate.getChannel()+"-->"+translate.getTerminalSocket());
     }
     @Override
     public void run() {

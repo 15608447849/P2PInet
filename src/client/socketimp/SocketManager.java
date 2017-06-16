@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
  */
 public class SocketManager implements CompletionHandler<Void, Void> {
     //重新连接时间
-    private static final int reconnectTime = 1000 * 15;
+    private static final int RECONNECT_TIME = 1000 * 30;
     public Info info;
     public AsynchronousSocketChannel socket;
     public SocketHandler reader;
@@ -28,6 +28,7 @@ public class SocketManager implements CompletionHandler<Void, Void> {
     public SourceManager sourceManager;
     private final ByteBuffer byteBuffer = ByteBuffer.allocate(Parse.DATA_BUFFER_MAX_ZONE);
     private boolean isConnected;
+    public TranslateManager translateManager = new TranslateManager();
     public SocketManager(Info info,SourceManager sourceManager){
         this.info = info;
         this.sourceManager = sourceManager;
@@ -39,26 +40,25 @@ public class SocketManager implements CompletionHandler<Void, Void> {
     //连接服务器
     public void connectServer(){
         try {
-            socket = AsynchronousSocketChannel.open(AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(10)));
-            socket.setOption(StandardSocketOptions.SO_KEEPALIVE,true);//保持连接
+            if (translateManager.size() > 0){
+                LOG.I("存在传输任务.暂不连接服务器.");
+                reConnection();
+            }else{
+                socket = AsynchronousSocketChannel.open(AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(10)));
+                socket.setOption(StandardSocketOptions.SO_KEEPALIVE,true);//保持连接
 //            socket.setOption(StandardSocketOptions.SO_REUSEADDR,true);//端口复用
-            socket.setOption(StandardSocketOptions.TCP_NODELAY,true);
-            socket.bind(info.getLocalAddress());//绑定到本地
-            socket.connect(info.getServerAddress(), null, this);
-            PortManager.get().addPort(info.getLocalAddress().getPort());//添加已使用端口
-
-        } catch (IOException e) {
+                socket.setOption(StandardSocketOptions.TCP_NODELAY,true);
+                socket.bind(info.getLocalAddress());//绑定到本地
+                socket.connect(info.getServerAddress(), null, this);
+                PortManager.get().addPort(info.getLocalAddress().getPort());//添加已使用端口
+                //等待
+                synchronized (info){
+                        info.wait();
+                }
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        //等待
-        synchronized (info){
-            try {
-                info.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
     }
 
     @Override
@@ -88,7 +88,7 @@ public class SocketManager implements CompletionHandler<Void, Void> {
         closeConnect();
         try {
             synchronized (this){
-                this.wait(reconnectTime);
+                this.wait(RECONNECT_TIME);
             }
         } catch (InterruptedException e) {
         }
