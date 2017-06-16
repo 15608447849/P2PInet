@@ -133,16 +133,27 @@ public class DataDownload extends DataImp{
     }
 
     private void querySend() {
-            ByteBuffer sendBuf = ByteBuffer.allocate(5);
+            ByteBuffer sendBuf = ByteBuffer.allocate(mtuValue);
+            sendBuf.clear();
             LOG.E("发送传输请求. - 已接受的分片数:"+recList.size());
             Iterator<Integer> itr = recList.iterator();
+            int index = -1;
             while (itr.hasNext()){
-                sendBuf.clear();
-                sendBuf.put(Command.UDPTranslate.receiveSlice);
-                sendBuf.putInt(itr.next());
-                sendBuf.flip();
-                sendDataToAddress(sendBuf);
+                index = itr.next();
                 itr.remove();
+                if (sendBuf.remaining()<4){
+                    //发送
+                    sendBuf.flip();
+                    sendDataToAddress(sendBuf);
+                    sendBuf.clear();
+                    waitTime();
+                }
+                if (sendBuf.position()==0) {
+                    sendBuf.put(Command.UDPTranslate.receiveSlice);
+                }
+                if (sendBuf.remaining()>=4){
+                    sendBuf.putInt(index);
+                }
             }
 
             sendBuf.clear();

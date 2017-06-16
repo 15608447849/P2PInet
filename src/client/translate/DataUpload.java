@@ -146,12 +146,12 @@ public class DataUpload extends DataImp {
             fileChannel.read(sendBuf,sliceUnitMap.get(count),sendBuf,this);
             waitTime2();
         }
+        sendBuf = ByteBuffer.allocate(mtuValue);
         //发送完成标识
         sendBuf.clear();
         sendBuf.putInt(-1);
         fileChannel.read(sendBuf,element.fileLength,sendBuf,this);
         state = RECEIVE;// 接收状态.接收对方回执
-        waitTime();
         LOG.I("数据流已发送完毕.耗时: "+ (System.currentTimeMillis() - time));
     }
     //读取本地流发送成功
@@ -159,7 +159,6 @@ public class DataUpload extends DataImp {
     public void completed(Integer integer, Object o) {
             ByteBuffer sendBuf = (ByteBuffer) o;
             sendBuf.flip();
-            sendBuf.rewind();
             //发送.
             sendDataToAddress(sendBuf);
     }
@@ -169,7 +168,7 @@ public class DataUpload extends DataImp {
      */
     private void receiveData() {
         resetTime();
-        final ByteBuffer recBuf = ByteBuffer.allocate(5);
+        final ByteBuffer recBuf = ByteBuffer.allocate(mtuValue);
         SocketAddress address = null;
         int index = -1;
         while (state==RECEIVE  && getChannel().isOpen() ){
@@ -184,7 +183,10 @@ public class DataUpload extends DataImp {
                 recBuf.flip();
                 if (recBuf.get(0) == Command.UDPTranslate.receiveSlice){
                     recBuf.position(1);
-                    receiveSuccessIndexList.add(recBuf.getInt());
+                    while (recBuf.remaining()>=4){
+                        receiveSuccessIndexList.add(recBuf.getInt());
+                    }
+
                 }else if (recBuf.get(0) == Command.UDPTranslate.send){
                     LOG.I(" 收到 发送数据请求..");
                     state = SEND;

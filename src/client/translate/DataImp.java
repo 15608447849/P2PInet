@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 public abstract class DataImp extends Thread implements CompletionHandler<Integer,Object> {
 
 
-   public static final int OVER_TIME_ONCE = 100000; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1毫秒
-   public static final int OVER_TIME_ONCE_2 = 1; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1/10毫秒
+   public static final int OVER_TIME_ONCE = 100; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1毫秒
+   public static final int OVER_TIME_ONCE_2 = 10; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1/10毫秒
     public static final int OVER_MAX = 2000; //超时时间 最大次数
     protected int overTimeCount = 0;//超时次数
     protected DataElement element;
@@ -131,6 +131,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
             element.sendBuffer(buffer);
         } catch (IOException e) {
             e.printStackTrace();
+            LOG.E("数据:"+ buffer);
         }
     }
 
