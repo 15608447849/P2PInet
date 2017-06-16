@@ -8,6 +8,7 @@ import utils.NetworkUtil;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
@@ -124,7 +125,7 @@ public abstract class TranslateThread extends Thread{
         LOG.I("进入主动模式, 尝试连接对方 >> "+ translate.getTerminalSocket());
         resetTime();
         ByteBuffer buffer = translate.getBuffer();
-        InetSocketAddress terminal;
+        SocketAddress terminal;
         int count = 1;
         while (isNotTimeout()){
             try {
@@ -135,22 +136,21 @@ public abstract class TranslateThread extends Thread{
                 LOG.I("握手包已发送 -> "+ translate.getTerminalSocket());
 
                 buffer.clear();
-                terminal = (InetSocketAddress) translate.getChannel().receive(buffer);//等待接收
-                LOG.I(terminal +" =====>> " + overTimeCount);
+                terminal = translate.getChannel().receive(buffer);//等待接收
                 if (terminal!=null){
                     buffer.flip();
+                    LOG.I("收到:"+terminal);
                     if (buffer.get(0) == Command.UDPTranslate.shakePackage_resp){
                         LOG.I(TAG+" 收到对端信息,[ " +terminal +" ],握手成功.当前尝试次数:"+ count);
                         if (count == 3){
-                            LOG.I("进入数据交互.");
+                            LOG.I("可以进入数据交互.");
                             translate.setConnectSuccess();
                             break;
                         }
                         count++;
                     }
                 }
-
-                waitTime(1);
+                waitTime(2000);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -166,7 +166,7 @@ public abstract class TranslateThread extends Thread{
             try {
                 buffer.clear();
                 terminal = (InetSocketAddress) translate.getChannel().receive(buffer);//等待接收
-                LOG.I(terminal+" ---------> "  + overTimeCount );
+
                 if (terminal!=null){
                     buffer.flip();
                     if (buffer.get(0) == Command.UDPTranslate.shakePackage){
@@ -182,10 +182,9 @@ public abstract class TranslateThread extends Thread{
                         buffer.clear();
                         buffer.put(Command.UDPTranslate.shakePackage_resp);
                         buffer.flip();
-
                         translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
                         LOG.I(TAG+"收到对端信息- " + terminal +"已发送握手回执.");
-                        count++;
+//                        count++;
                     }
                 }
 
