@@ -113,26 +113,21 @@ public class DataDownload extends DataImp{
      * @param fileChannel
      */
     private void checkComplete(AsynchronousFileChannel fileChannel) {
-        if (!sliceUnitMap.isEmpty() || position!=element.fileLength){
-            LOG.I("剩余分片 :  ["+sliceUnitMap.keySet()+"]\n数量:"+sliceUnitMap.size() +"\n当前进度值:"+position+",文件实际大小:"+element );
-            state = SEND;
-            return;
-        }
-        if (MD5Util.isSaveMD5(element.downloadFileTemp.toFile(),element.downloadFileMD5)){
-            closeFileChannel(fileChannel);
-
+        if (sliceUnitMap.isEmpty() || position==element.fileLength ){
+            if (MD5Util.isSaveMD5(element.downloadFileTemp.toFile(),element.downloadFileMD5)){
+                closeFileChannel(fileChannel);
                 //通知结束
                 ByteBuffer buffer = ByteBuffer.allocate(1);
                 buffer.clear();
                 buffer.put(Command.UDPTranslate.over);
                 buffer.flip();
                 sendDataToAddress(buffer);
-
-            LOG.I("下载成功.重命名: "+element.downloadFileTemp.toFile().renameTo(element.downloadFile.toFile())+" ,已通知任务完成.");
-        }else{
-            LOG.I("请求重传,数据异常.");
-            state = SEND;
+                LOG.I("下载成功.重命名: "+element.downloadFileTemp.toFile().renameTo(element.downloadFile.toFile())+" ,已通知任务完成.");
+                return;
+            }
         }
+        LOG.I("剩余分片 :  ["+sliceUnitMap.keySet()+"]\n数量:"+sliceUnitMap.size() +"\n当前进度值:"+position+",文件实际大小:"+element );
+        state = SEND;
     }
 
     private void querySend() {
