@@ -132,7 +132,7 @@ public abstract class TranslateThread extends Thread{
                 buffer.clear();
                 buffer.put(Command.UDPTranslate.shakePackage);
                 buffer.flip();
-                translate.sendMessageToTarget(buffer, translate.getTerminalSocket(), translate.getChannel());//发送信息
+                translate.sendMessageToTarget(buffer, translate.getTerminalSocket(), translate.getChannel());//发送
                 LOG.I("握手包已发送 -> "+ translate.getTerminalSocket());
 
                 buffer.clear();
@@ -145,6 +145,12 @@ public abstract class TranslateThread extends Thread{
                         if (count == 3){
                             LOG.I("可以进入数据交互.");
                             translate.setConnectSuccess();
+                            //通知握手成功
+                            buffer.clear();
+                            buffer.put(Command.UDPTranslate.shakeSuccess);
+                            buffer.flip();
+                            translate.sendMessageToTarget(buffer, translate.getTerminalSocket(), translate.getChannel());//发送 成功信息
+
                             break;
                         }
                         count++;
@@ -161,7 +167,6 @@ public abstract class TranslateThread extends Thread{
         LOG.I("进入被动模式,尝试等待对方连接 ,已知地址 [ "+ translate.getTerminalSocket()+" ]");
         ByteBuffer buffer = translate.getBuffer();
         InetSocketAddress terminal ;
-        int count=1;
         while (isNotTimeout()){
             try {
                 buffer.clear();
@@ -170,21 +175,18 @@ public abstract class TranslateThread extends Thread{
                 if (terminal!=null){
                     buffer.flip();
                     if (buffer.get(0) == Command.UDPTranslate.shakePackage){
-                        if (count==3){
-                            LOG.E("对方地址是否改变: "+ terminal.equals(translate.getTerminalSocket()));
-                            translate.setTerminalSocket(terminal);
-                            translate.setConnectSuccess();
-                            LOG.I(".进入数据传输. "+translate.getTerminalSocket() +" - ");
-                            break;
-                        }
-
-
                         buffer.clear();
                         buffer.put(Command.UDPTranslate.shakePackage_resp);
                         buffer.flip();
                         translate.sendMessageToTarget(buffer, terminal, translate.getChannel());//发送信息
-                        LOG.I(TAG+"收到对端信息- " + terminal +"已发送握手回执.");
-//                        count++;
+                        LOG.I(TAG+"收到对端信息- " + terminal +" 的握手包,已发送握手回执.");
+                    }
+                    if (buffer.get(0) == Command.UDPTranslate.shakeSuccess){
+                        LOG.E("对方地址是否改变: "+ terminal.equals(translate.getTerminalSocket()));
+                        translate.setTerminalSocket(terminal);
+                        translate.setConnectSuccess();
+                        LOG.I(".进入数据传输. "+translate.getTerminalSocket() +" - ");
+                        break;
                     }
                 }
 

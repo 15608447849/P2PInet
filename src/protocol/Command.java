@@ -96,6 +96,10 @@ public class Command {
          */
         public static final byte shakePackage_resp = 34;
         /**
+         * 握手成功
+         */
+        public static final byte shakeSuccess = 35;
+        /**
          * 检测MTU
          */
         public static final byte mtuCheck = 40;
