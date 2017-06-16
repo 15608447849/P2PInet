@@ -136,29 +136,32 @@ public class DataDownload extends DataImp{
             ByteBuffer sendBuf = ByteBuffer.allocate(mtuValue);
             sendBuf.clear();
             LOG.E("发送传输请求. 已接收的分片数: "+ recList.size());
-            Iterator<Integer> itr = recList.iterator();
-            int index = -1;
-            while (itr.hasNext()){
-                index = itr.next();
-                itr.remove();
-                if (sendBuf.remaining()<4){
-                    //发送
-                    sendBuf.flip();
-                    sendDataToAddress(sendBuf);
-                    sendBuf.clear();
-                    waitTime();
+            if (recList.size()>0){
+                Iterator<Integer> itr = recList.iterator();
+                int index = -1;
+                while (itr.hasNext()){
+                    index = itr.next();
+                    itr.remove();
+                    if (sendBuf.remaining()<4){
+                        //发送
+                        sendBuf.flip();
+                        sendDataToAddress(sendBuf);
+                        sendBuf.clear();
+                        waitTime();
+                    }
+                    if (sendBuf.position()==0) {
+                        sendBuf.put(Command.UDPTranslate.receiveSlice);
+                    }
+                    if (sendBuf.remaining()>=4){
+                        sendBuf.putInt(index);
+                    }
                 }
-                if (sendBuf.position()==0) {
-                    sendBuf.put(Command.UDPTranslate.receiveSlice);
-                }
-                if (sendBuf.remaining()>=4){
-                    sendBuf.putInt(index);
-                }
+                sendBuf.flip();
+                sendDataToAddress(sendBuf);
+                waitTime();
             }
 
-            sendBuf.flip();
-            sendDataToAddress(sendBuf);
-            waitTime();
+
             sendBuf.clear();
             sendBuf.put(Command.UDPTranslate.send);
             sendBuf.flip();
