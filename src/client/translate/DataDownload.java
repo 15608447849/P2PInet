@@ -88,6 +88,7 @@ public class DataDownload extends DataImp{
         try {
             fileChannel = AsynchronousFileChannel.open(element.downloadFileTemp, StandardOpenOption.WRITE);
             while (state!=OVER && state!=ERROR){
+
                 if (state == SEND){
                     querySend();
                 }
@@ -97,6 +98,7 @@ public class DataDownload extends DataImp{
                 if (state == OVER){
                     checkComplete(fileChannel);
                 }
+
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -133,9 +135,10 @@ public class DataDownload extends DataImp{
     }
 
     private void querySend() {
+
             ByteBuffer sendBuf = ByteBuffer.allocate(mtuValue);
             sendBuf.clear();
-            LOG.E("发送传输请求. 已接收的分片数: "+ recList.size());
+            LOG.E("发送传输请求. 已接收的分片数 : "+ recList.size());
             if (recList.size()>0){
                 Iterator<Integer> itr = recList.iterator();
                 int index = -1;
@@ -156,12 +159,12 @@ public class DataDownload extends DataImp{
                         sendBuf.putInt(index);
                     }
                 }
+
                 sendBuf.flip();
                 sendDataToAddress(sendBuf);
-                waitTime();
             }
 
-
+            waitTime();
             sendBuf.clear();
             sendBuf.put(Command.UDPTranslate.send);
             sendBuf.flip();
@@ -178,7 +181,6 @@ public class DataDownload extends DataImp{
             state = ERROR;
             return;
         }
-            recList.clear();
             resetTime();
             SocketAddress address = null;
             final DatagramChannel channel = getChannel();
@@ -219,16 +221,16 @@ public class DataDownload extends DataImp{
     @Override
     public void completed(Integer integer, Object o) {
         if (position==0) time=System.currentTimeMillis();
+        position+=integer;
         int index = (int) o;
         recList.add(index);
         //已写入
         sliceUnitMap.remove(index); //移除下标
-        if (sliceUnitMap.size() == 0){
-            state = OVER;
-        }
-        position+=integer;
         if (position == element.fileLength){
             LOG.I("当前进度: "+ String.format("%.2f%%",((double)position / (double) element.fileLength)*100)+((position==element.fileLength)?" 耗时:"+(System.currentTimeMillis()-time):"."));
+        }
+        if (sliceUnitMap.size() == 0 || position==element.fileLength){
+            state = OVER;
         }
     }
 }

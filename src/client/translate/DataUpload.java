@@ -144,7 +144,7 @@ public class DataUpload extends DataImp {
             sendBuf.clear();
             sendBuf.putInt(count);
             fileChannel.read(sendBuf,sliceUnitMap.get(count),sendBuf,this);
-            waitTime2();
+//            waitTime2();
         }
         sendBuf = ByteBuffer.allocate(mtuValue);
         //发送完成标识
@@ -181,8 +181,13 @@ public class DataUpload extends DataImp {
             if (checkAddress(address)){
                 resetTime();
                 recBuf.flip();
+                if (recBuf.get(0) == Command.UDPTranslate.over){
+                    LOG.I(" 收到 结束任务.");
+                    state = OVER;
+                }else
                 if (recBuf.get(0) == Command.UDPTranslate.receiveSlice){
                     recBuf.position(1);
+                    LOG.I(" 收到 回执信息:"+recBuf);
                     while (recBuf.remaining()>=4){
                         receiveSuccessIndexList.add(recBuf.getInt());
                     }
@@ -190,9 +195,6 @@ public class DataUpload extends DataImp {
                 }else if (recBuf.get(0) == Command.UDPTranslate.send){
                     LOG.I(" 收到 发送数据请求..");
                     state = SEND;
-                }else if (recBuf.get(0) == Command.UDPTranslate.over){
-                    LOG.I(" 收到 结束任务.");
-                    state = OVER;
                 }
 
             }
