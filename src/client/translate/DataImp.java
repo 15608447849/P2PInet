@@ -37,12 +37,13 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
 
     public int state = NODE;
 
-    public static final long OVER_TIME_LIMIT = 30 * 1000;//30秒
+    public long time_limit = 30 * 1000;//30秒
     public long curTime = System.currentTimeMillis();
 
 
     public DataImp(DataElement element) {
         this.element = element;
+        time_limit = element.type == DataElement.UPLOAD?20000:15000;
     }
     public DataImp setAction(TranslateAction action) {
         this.action = action;
@@ -133,7 +134,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
         curTime = System.currentTimeMillis();
     }
     protected boolean isNotTimeout(){
-        return System.currentTimeMillis() - curTime <= OVER_TIME_LIMIT;
+        return System.currentTimeMillis() - curTime <= time_limit;
     }
 
     protected DatagramChannel getChannel(){

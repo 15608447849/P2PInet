@@ -175,7 +175,7 @@ public class DataUpload extends DataImp {
             sendBuf.clear();
             sendBuf.putInt(count);
             fileChannel.read(sendBuf,sliceUnitMap.get(count),sendBuf,this);
-//            waitTime2();
+            waitTime2();
         }
         //发送完成标识
         sendBuf.clear();
