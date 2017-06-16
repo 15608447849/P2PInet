@@ -14,6 +14,7 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.DatagramChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.Future;
 
 /**
@@ -21,6 +22,8 @@ import java.util.concurrent.Future;
  */
 public class DataDownload extends DataImp{
 
+    private ArrayList<Integer> recList = new ArrayList<>();
+    private long time ;
     //进度
     private long position = 0;
     public DataDownload(DataElement element) {
@@ -48,12 +51,8 @@ public class DataDownload extends DataImp{
                         mtuValue = buffer.limit();
                         LOG.I("检测到 MTU 大小: "+ mtuValue);
                         buffer.rewind();
-                        try {
-                            sendDataToAddress(buffer);
-                            return;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        sendDataToAddress(buffer);
+                        return;
                     }
                 }
             }
@@ -71,12 +70,10 @@ public class DataDownload extends DataImp{
         buffer.clear();
         buffer.put(Command.UDPTranslate.sliceSure);
         buffer.flip();
-        try {
+
             sendDataToAddress(buffer);
             LOG.I("切片大小:"+sliceUnitMap+",已发送切片成功应答.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
 
@@ -120,16 +117,14 @@ public class DataDownload extends DataImp{
         }
         if (MD5Util.isSaveMD5(element.downloadFileTemp.toFile(),element.downloadFileMD5)){
             closeFileChannel(fileChannel);
-            try {
+
                 //通知结束
                 ByteBuffer buffer = ByteBuffer.allocate(1);
                 buffer.clear();
                 buffer.put(Command.UDPTranslate.over);
                 buffer.flip();
                 sendDataToAddress(buffer);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
             LOG.I("下载成功.重命名: "+element.downloadFileTemp.toFile().renameTo(element.downloadFile.toFile())+" ,已通知任务完成.");
         }else{
             LOG.I("请求重传,数据异常.");
@@ -138,17 +133,23 @@ public class DataDownload extends DataImp{
     }
 
     private void querySend() {
-            ByteBuffer sendBuf = ByteBuffer.allocate(1);
+            ByteBuffer sendBuf = ByteBuffer.allocate(5);
+            LOG.E("发送传输请求. - 已接受的分片数:"+recList.size());
+            Iterator<Integer> itr = recList.iterator();
+            while (itr.hasNext()){
+                sendBuf.clear();
+                sendBuf.put(Command.UDPTranslate.receiveSlice);
+                sendBuf.putInt(itr.next());
+                sendBuf.flip();
+                sendDataToAddress(sendBuf);
+                itr.remove();
+            }
+
             sendBuf.clear();
             sendBuf.put(Command.UDPTranslate.send);
             sendBuf.flip();
-            try {
-                sendDataToAddress(sendBuf);
-                state = RECEIVE;
-                LOG.E("发送传输请求. - 已接受的分片数:"+recList.size());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            sendDataToAddress(sendBuf);
+            state = RECEIVE;
     }
 
     /**
@@ -180,7 +181,7 @@ public class DataDownload extends DataImp{
                     resetTime();
                     count = recBuf.getInt();
                     if (sliceUnitMap.containsKey(count)) {
-                        fileChannel.write(recBuf, sliceUnitMap.get(count), recBuf, this);
+                        fileChannel.write(recBuf, sliceUnitMap.get(count), count, this);
                     }else if (count==-1){
                         state = OVER;
                     }
@@ -198,31 +199,17 @@ public class DataDownload extends DataImp{
             }
     }
 
-
-
-    private ArrayList<Integer> recList = new ArrayList<>();
-    private long time ;
     @Override
     public void completed(Integer integer, Object o) {
         if (position==0) time=System.currentTimeMillis();
-        final ByteBuffer buffer = (ByteBuffer) o;
-        buffer.rewind();
-        int index = buffer.getInt();
+        int index = (int) o;
+        recList.add(index);
         //已写入
-        try {
-            buffer.clear();
-            buffer.putInt(index);
-            buffer.flip();
-            sendDataToAddress(buffer);
-            recList.add(index);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         sliceUnitMap.remove(index); //移除下标
         if (sliceUnitMap.size() == 0){
             state = OVER;
         }
-       position+=integer;
+        position+=integer;
         LOG.I("当前进度: "+ String.format("%.2f%%",((double)position / (double) element.fileLength)*100)+((position==element.fileLength)?" 耗时:"+(System.currentTimeMillis()-time):"."));
     }
 }

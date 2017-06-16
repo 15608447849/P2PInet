@@ -126,8 +126,12 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
     }
 
     //发送数据到对方
-    protected void sendDataToAddress(ByteBuffer buffer) throws IOException {
-        element.sendBuffer(buffer);
+    protected void sendDataToAddress(ByteBuffer buffer){
+        try {
+            element.sendBuffer(buffer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     protected void resetTime(){

@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by user on 2017/6/13.
@@ -21,43 +22,6 @@ public class DataUpload extends DataImp {
 
 
     private ArrayList<Integer> receiveSuccessIndexList = new ArrayList<>();
-
-    private class ReceiveSuccessIndex extends Thread{
-        public ReceiveSuccessIndex() {
-            this.start();
-        }
-
-        @Override
-        public void run() {
-            receiveSuccessIndexList.clear();
-            ByteBuffer buffer = ByteBuffer.allocate(4);
-            int index = -1;
-            SocketAddress address = null;
-            while (state == SEND && getChannel().isOpen()){
-                try {
-                    buffer.clear();
-                    if (state==SEND){
-                        address = getChannel().receive(buffer);
-                    }else{
-                        break;
-                    }
-                    if (checkAddress(address) ){
-                        buffer.flip();
-                        if (buffer.remaining()!=4) continue;
-                        index = buffer.getInt();
-                        if (index>=-1) {
-                            receiveSuccessIndexList.add(index);
-                        }else
-                        if (index==-1) break;
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            LOG.I("本地对方成功接受的回执数: "+ receiveSuccessIndexList.size());
-        }
-    }
-
 
     public DataUpload(DataElement element) {
         super(element);
@@ -77,11 +41,9 @@ public class DataUpload extends DataImp {
                     buf.put(Command.UDPTranslate.mtuCheck);
                 }
                 buf.flip();
-                try {
+
                     sendDataToAddress(buf);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+
                 currentMTU--;
             }
 
@@ -167,13 +129,15 @@ public class DataUpload extends DataImp {
             state = ERROR;
             return;
         }
+        LOG.I("可移除分片数 : "+receiveSuccessIndexList.size());
         //处理需要发送的分片
-        for (int index : receiveSuccessIndexList){
-            sliceUnitMap.remove(index);
+        Iterator<Integer> itr = receiveSuccessIndexList.iterator();
+        while (itr.hasNext()){
+            sliceUnitMap.remove(itr.next());
+            itr.remove();
         }
-        new ReceiveSuccessIndex();
         ByteBuffer sendBuf = null;
-        LOG.I("可发送分片数量 -> "+ sliceUnitMap.size());
+        LOG.I("可发送分片数量 : "+ sliceUnitMap.size());
         long time = System.currentTimeMillis();
         for (Integer count:sliceUnitMap.keySet()){
             sendBuf = ByteBuffer.allocate(mtuValue);
@@ -193,17 +157,11 @@ public class DataUpload extends DataImp {
     //读取本地流发送成功
     @Override
     public void completed(Integer integer, Object o) {
-        try {
-
             ByteBuffer sendBuf = (ByteBuffer) o;
             sendBuf.flip();
-
             sendBuf.rewind();
             //发送.
             sendDataToAddress(sendBuf);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -211,8 +169,9 @@ public class DataUpload extends DataImp {
      */
     private void receiveData() {
         resetTime();
-        final ByteBuffer recBuf = ByteBuffer.allocate(1);
+        final ByteBuffer recBuf = ByteBuffer.allocate(5);
         SocketAddress address = null;
+        int index = -1;
         while (state==RECEIVE  && getChannel().isOpen() ){
             recBuf.clear();
             try {
@@ -221,14 +180,19 @@ public class DataUpload extends DataImp {
                 e.printStackTrace();
             }
             if (checkAddress(address)){
+                resetTime();
                 recBuf.flip();
-                if (recBuf.get(0) == Command.UDPTranslate.send){
-                    LOG.I(" 收到发送数据请求.");
+                if (recBuf.get(0) == Command.UDPTranslate.receiveSlice){
+                    recBuf.position(1);
+                    receiveSuccessIndexList.add(recBuf.getInt());
+                }else if (recBuf.get(0) == Command.UDPTranslate.send){
+                    LOG.I(" 收到 发送数据请求..");
                     state = SEND;
                 }else if (recBuf.get(0) == Command.UDPTranslate.over){
-                    LOG.I(" 结束任务.");
+                    LOG.I(" 收到 结束任务.");
                     state = OVER;
                 }
+
             }
             if (!isNotTimeout()){
                 if (overTimeCount>OVER_MAX){
