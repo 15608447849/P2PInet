@@ -43,11 +43,13 @@ public class DataDownload extends DataImp{
                 if (checkAddress(address)){
                     buffer.flip();
                     if (buffer.get(0) == Command.UDPTranslate.mtuCheck){
-                        //返回信息.
-                        mtuValue = buffer.limit();
-                        LOG.I("检测到 MTU 大小: "+ mtuValue);
                         buffer.rewind();
                         sendDataToAddress(buffer);
+                    }
+                    if (buffer.get(0) == Command.UDPTranslate.mtuSure){
+                        buffer.position(1);
+                        mtuValue = buffer.getInt();
+                        LOG.I("确定MTU 大小:"+ mtuValue);
                         return;
                     }
                 }

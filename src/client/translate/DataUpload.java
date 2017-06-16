@@ -52,13 +52,17 @@ public class DataUpload extends DataImp {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            LOG.E("MTU - REC: "+ address+"      "+buf);
+//            LOG.E("MTU - REC: "+ address+"      "+buf);
             if (checkAddress(address)){
                 buf.flip();
 
                 if (buf.get(0) == Command.UDPTranslate.mtuCheck){
                     mtuValue = buf.limit();
                     LOG.I("确定MTU大小: "+ mtuValue);
+                    //发送MTU确定
+                    buf.clear();
+                    buf.put(Command.UDPTranslate.mtuSure);
+                    buf.putInt(mtuValue);
                     return;
                 }
             }

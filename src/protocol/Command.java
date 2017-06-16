@@ -106,6 +106,10 @@ public class Command {
         /**
          * 确定MTU
          */
+        public static final byte mtuSure = 39;
+        /**
+         * 确定分片大小
+         */
         public static final byte sliceSure = 41;
 
         /**
