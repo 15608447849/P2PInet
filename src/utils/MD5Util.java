@@ -108,16 +108,17 @@ public class MD5Util {
     }
 
 
+    public static boolean isSaveMD5(File file,String fileMd5){
 
-//    public static void main(String[] args) throws IOException {
-//        long begin = System.currentTimeMillis();
-//        File big = new File("C:\\FileServerDirs\\source\\ace.mp4");
-//        String md5=getFileMD5String(big);
-//        long end = System.currentTimeMillis();
-//        System.out.println("MD5:"+md5+" ,TIME:"+(end-begin)+"毫秒");
-//        byte[] bytes = getFileMD5Bytes(big);
-//        md5 = bytesGetMD5String(bytes);
-//        System.out.println("MD5:"+md5);
-//    }
+        //判断文件md5
+        String md5 = "";
+        try {
+            md5 = MD5Util.getFileMD5String(file);
+            return md5.equals(fileMd5);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+         return false;
+    }
 
 }

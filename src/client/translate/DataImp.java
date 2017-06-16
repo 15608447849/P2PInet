@@ -4,6 +4,7 @@ import protocol.Parse;
 import utils.LOG;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
@@ -16,31 +17,28 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class DataImp extends Thread implements CompletionHandler<Integer,Object> {
 
-   public static final int OVER_MAX = 30; //超时时间 最大次数
-   public static final int OVER_INIT = 0; //初始化
-   public static final int OVER_TIME_ONCE = 1000000; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1毫秒
-   public static final int OVER_TIME_ONCE_2= 10000; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1/10毫秒
+
+   public static final int OVER_TIME_ONCE = 100000; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1毫秒
+   public static final int OVER_TIME_ONCE_2 = 1000; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1/10毫秒
 
     protected DataElement element;
     protected TranslateAction action;
-    protected int overTimeCount = 0;
-    protected long len;
-    public long sendCount = 0L; //当前发送次数
-    public long recvCount = 0L; //当前发送次数
-    public long position = 0L;//当前发送下标
-    public byte cmd = 0;//命令
+
     public int mtuValue = Parse.UDP_DATA_MIN_BUFFER_ZONE;
     public static final int INDEX_LEN = 4;
     public HashMap<Integer,Long> sliceUnitMap = null;
 
+    public static final int ERROR = -1;
     public static final int NODE = 0;
     public static final int SEND = 1;
     public static final int RECEIVE = 2;
     public static final int OVER = 3;
 
     public int state = NODE;
-    //第一次传输
-    public boolean isOnes = true;
+
+    public static final long OVER_TIME_LIMIT = 30 * 1000;//30秒
+    public long curTime = System.currentTimeMillis();
+
 
     public DataImp(DataElement element) {
         this.element = element;
@@ -129,20 +127,28 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
     protected void sendDataToAddress(ByteBuffer buffer) throws IOException {
         element.sendBuffer(buffer);
     }
-    protected void initOverTime(){
-        overTimeCount = OVER_INIT;
+
+    protected void resetTime(){
+        curTime = System.currentTimeMillis();
     }
-    protected boolean isNotOverTime(){
-        return overTimeCount<OVER_MAX;
+    protected boolean isNotTimeout(){
+        return System.currentTimeMillis() - curTime <= OVER_TIME_LIMIT;
     }
+
     protected DatagramChannel getChannel(){
         return element.channel;
     }
     protected void setSliceMap(){
         sliceUnitMap = cellCount(element.fileLength,mtuValue-INDEX_LEN);
     }
+    protected boolean checkAddress(SocketAddress address){
+        return address!=null && address.equals(element.toAddress);
+    }
+
     @Override
     public void failed(Throwable throwable, Object o) {
         throwable.printStackTrace();
     }
+
+
 }
