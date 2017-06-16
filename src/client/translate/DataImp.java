@@ -68,12 +68,12 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
             action.onComplete(element);
         }
     }
-
+    protected final int sendLimit = 100;
     private void setBufferZone(){
         DatagramSocket socket = element.channel.socket();
         try {
-            socket.setSendBufferSize(mtuValue*2);
-            socket.setReceiveBufferSize(mtuValue*2);
+            socket.setSendBufferSize(mtuValue*sendLimit);
+            socket.setReceiveBufferSize(mtuValue*sendLimit);
         } catch (SocketException e) {
             e.printStackTrace();
         }

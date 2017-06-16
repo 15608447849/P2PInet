@@ -147,7 +147,7 @@ public class DataUpload extends DataImp {
             fileChannel.read(sendBuf,sliceUnitMap.get(count),sendBuf,this);
             i++;
 //            waitTime2();
-            if (i > 10) break;
+            if (i == sendLimit) break;
         }
         LOG.I("可发送分片数量 : "+ sliceUnitMap.size()+"  实际发送量 : "+i);
         sendBuf = ByteBuffer.allocate(mtuValue);
