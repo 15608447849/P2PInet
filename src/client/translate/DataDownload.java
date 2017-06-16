@@ -215,6 +215,6 @@ public class DataDownload extends DataImp{
             state = OVER;
         }
        position+=integer;
-        LOG.I("当前进度: "+ String.format("%f%%",((double)position / (double) element.fileLength)*100));
+        LOG.I("当前进度: "+ String.format("%.2f%%",((double)position / (double) element.fileLength)*100));
     }
 }
