@@ -29,6 +29,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
     protected TranslateAction action;
 
     public int mtuValue = Parse.UDP_DATA_MIN_BUFFER_ZONE;
+
     public static final int INDEX_LEN = 4;
     public HashMap<Integer,Long> sliceUnitMap = null;
 
@@ -161,6 +162,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
         return element.channel;
     }
     protected void setSliceMap(){
+        mtuValue = mtuValue-20-8;
         sliceUnitMap = cellCount(element.fileLength,mtuValue-INDEX_LEN);
     }
     protected boolean checkAddress(SocketAddress address){
