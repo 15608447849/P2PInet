@@ -87,13 +87,13 @@ public abstract class TranslateThread extends Thread{
                     if (serializeTranslate!=null){
                         translate.setMode(serializeTranslate.mode);
                         translate.setTerminalSocket(serializeTranslate.address);
-                        //回复服务器->进入下一步
+
                         respondServerHeartbeat();
                         break;
                     }
                 }
             }
-
+            waitTime(1000);
         }
     }
 
@@ -139,7 +139,7 @@ public abstract class TranslateThread extends Thread{
                 terminal = translate.getChannel().receive(buffer);//等待接收
                 if (terminal!=null){
                     buffer.flip();
-                    LOG.I("收到:"+terminal);
+                    LOG.I("收到:"+terminal+" - "+buffer);
                     if (buffer.get(0) == Command.UDPTranslate.shakePackage_resp){
                         LOG.I(TAG+" 收到对端信息,[ " +terminal +" ],握手成功.当前尝试次数:"+ count);
                         if (count == 3){

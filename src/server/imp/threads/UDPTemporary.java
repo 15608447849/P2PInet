@@ -48,12 +48,12 @@ public class UDPTemporary extends Thread{
             //发送连接请求 ,通知AB 连接服务器
             notifyClientAConnect();
             notifyClientBConnect();
-            while (channel!=null && channel.isOpen()){
+            while (isNotTime() && channel!=null && channel.isOpen()){
                 sendTerminalNatInfo();
                 checkClose();
                 synchronized (this){
                     try {
-                        this.wait(100);
+                        this.wait(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -178,9 +178,9 @@ public class UDPTemporary extends Thread{
     }
 
     private void handler(InetSocketAddress clientNatAddress) {
+        if (clientNatAddress==null) return;
         recBuffer.flip();
-        if (clientNatAddress==null || recBuffer.limit()==0) return;
-
+//        LOG.I("收到: "+clientNatAddress+" -----------> "+ recBuffer);
         byte command = recBuffer.get(0);
         if (command == Command.UDPTranslate.udpHeartbeat){
             handlerClientHeartbeat(clientNatAddress);
@@ -220,19 +220,21 @@ public class UDPTemporary extends Thread{
         recBuffer.position(1);
         recBuffer.get(mac,0,6);
         String macStr = NetworkUtil.macByte2String(mac);
+        LOG.I("客户端MAC - "+ macStr);
         if ( macStr.equals(clientA.getMac()) || macStr.equals(clientB.getMac())){
             connectTask.setComplete(connectTask.getComplete()+1);
+            LOG.I(this + "收到 "+ clientNatAddress+" 命令回应,当前 complete == "+connectTask.getComplete());
         }
-        LOG.I(this + "收到 "+ clientNatAddress+" 命令回应,当前 complete == "+connectTask.getComplete());
+
     }
 
     /**
      * 单独开启一个线程处理.信息的发送.
      */
     private void sendTerminalNatInfo() {
-        if (connectTask.getComplete()>= 3 && connectTask.getComplete() <5) {//3.4
+        if (connectTask.getComplete()>= 3 && connectTask.getComplete() <5) { //3.4
             //根据客户端A的mac - 找到 Net地址.
-            LOG.I("互换终端NAT信息 - "+ connectTask.getComplete());
+//            LOG.I("互换终端NAT信息 - "+ connectTask.getComplete());
             InetSocketAddress clientANat = getNatAddress(clientA.getMac());
             InetSocketAddress clientBNat = getNatAddress(clientB.getMac());
             if ( clientANat==null || clientANat==null ) return;
@@ -266,6 +268,11 @@ public class UDPTemporary extends Thread{
                 sendTranlslate(modeA,clientANat,clientBNat);
                 sendTranlslate(modeB,clientBNat,clientANat);
             } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                sleep(1000);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
@@ -306,4 +313,11 @@ public class UDPTemporary extends Thread{
         return address;
     }
 
+    /**
+     * 超时计数
+     */
+    private long curTime = System.currentTimeMillis();
+    public boolean isNotTime() {
+        return (System.currentTimeMillis() - curTime)<40*1000;
+    }
 }
