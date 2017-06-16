@@ -110,8 +110,8 @@ public class DataDownload extends DataImp{
      * @param fileChannel
      */
     private void checkComplete(AsynchronousFileChannel fileChannel) {
-        if (sliceUnitMap.size()>=0){
-            LOG.I("剩余分片 : "+sliceUnitMap+" 数量:"+sliceUnitMap.size() );
+        if (sliceUnitMap.size()!=0 || position!=element.fileLength){
+            LOG.I("剩余分片 : "+sliceUnitMap+" 数量:"+sliceUnitMap.size() +" 当前进度值:"+position+",文件实际大小:"+element );
             state = SEND;
             return;
         }
@@ -156,6 +156,9 @@ public class DataDownload extends DataImp{
                 }
             }
 
+            sendBuf.flip();
+            sendDataToAddress(sendBuf);
+            waitTime();
             sendBuf.clear();
             sendBuf.put(Command.UDPTranslate.send);
             sendBuf.flip();
