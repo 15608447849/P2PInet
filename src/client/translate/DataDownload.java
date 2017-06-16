@@ -49,7 +49,7 @@ public class DataDownload extends DataImp{
                     if (buffer.get(0) == Command.UDPTranslate.mtuSure){
                         buffer.position(1);
                         mtuValue = buffer.getInt();
-                        LOG.I("确定MTU 大小:"+ mtuValue);
+                        LOG.I("确定MTU大小:"+ mtuValue);
                         return;
                     }
                 }

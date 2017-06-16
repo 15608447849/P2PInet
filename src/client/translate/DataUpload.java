@@ -43,6 +43,7 @@ public class DataUpload extends DataImp {
                 buf.flip();
                 sendDataToAddress(buf);
                 currentMTU--;
+                waitTime();
             }
 
             //接收
@@ -63,6 +64,8 @@ public class DataUpload extends DataImp {
                     buf.clear();
                     buf.put(Command.UDPTranslate.mtuSure);
                     buf.putInt(mtuValue);
+                    buf.flip();
+                    sendDataToAddress(buf);
                     return;
                 }
             }

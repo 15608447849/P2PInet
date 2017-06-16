@@ -142,7 +142,7 @@ public abstract class TranslateThread extends Thread{
                     LOG.I("收到:"+terminal+" - "+buffer);
                     if (buffer.get(0) == Command.UDPTranslate.shakePackage_resp){
                         LOG.I(TAG+" 收到对端信息,[ " +terminal +" ],握手成功.当前尝试次数:"+ count);
-                        if (count == 3){
+                        if (count == 2){
                             LOG.I("可以进入数据交互.");
                             translate.setConnectSuccess();
                             //通知握手成功
@@ -156,7 +156,7 @@ public abstract class TranslateThread extends Thread{
                         count++;
                     }
                 }
-                waitTime(2000);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -182,10 +182,10 @@ public abstract class TranslateThread extends Thread{
                         LOG.I(TAG+"收到对端信息- " + terminal +" 的握手包,已发送握手回执.");
                     }
                     if (buffer.get(0) == Command.UDPTranslate.shakeSuccess){
-                        LOG.E("对方地址是否改变: "+ terminal.equals(translate.getTerminalSocket()));
+                        LOG.I("对方地址是否相同: "+ terminal.equals(translate.getTerminalSocket()));
                         translate.setTerminalSocket(terminal);
                         translate.setConnectSuccess();
-                        LOG.I(".进入数据传输. "+translate.getTerminalSocket() +" - ");
+                        LOG.I(".进入数据传输. ");
                         break;
                     }
                 }
