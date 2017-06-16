@@ -110,8 +110,8 @@ public class DataDownload extends DataImp{
      * @param fileChannel
      */
     private void checkComplete(AsynchronousFileChannel fileChannel) {
-        if (sliceUnitMap.size()>0){
-            LOG.I(" 当前剩余分片:"+sliceUnitMap);
+        if (sliceUnitMap.size()>=0){
+            LOG.I("剩余分片 : "+sliceUnitMap+" 数量:"+sliceUnitMap.size() );
             state = SEND;
             return;
         }
@@ -135,7 +135,7 @@ public class DataDownload extends DataImp{
     private void querySend() {
             ByteBuffer sendBuf = ByteBuffer.allocate(mtuValue);
             sendBuf.clear();
-            LOG.E("发送传输请求. - 已接受的分片数:"+recList.size());
+            LOG.E("发送传输请求. 已接收的分片数: "+ recList.size());
             Iterator<Integer> itr = recList.iterator();
             int index = -1;
             while (itr.hasNext()){
@@ -221,6 +221,8 @@ public class DataDownload extends DataImp{
             state = OVER;
         }
         position+=integer;
-        LOG.I("当前进度: "+ String.format("%.2f%%",((double)position / (double) element.fileLength)*100)+((position==element.fileLength)?" 耗时:"+(System.currentTimeMillis()-time):"."));
+        if (position == element.fileLength){
+            LOG.I("当前进度: "+ String.format("%.2f%%",((double)position / (double) element.fileLength)*100)+((position==element.fileLength)?" 耗时:"+(System.currentTimeMillis()-time):"."));
+        }
     }
 }
