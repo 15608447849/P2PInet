@@ -73,13 +73,12 @@ public class DataUpload extends DataImp {
     protected void slice() {
         if (state==ERROR) return;
         super.slice();
-
-            LOG.I("等待客户端完成分片单元格.");
-            resetTime();
-            final ByteBuffer buffer = ByteBuffer.allocate(1);
-            SocketAddress address = null;
-            while (isNotTimeout()){
-                buffer.clear();
+        resetTime();
+        LOG.I("等待客户端完成分片操作.");
+        final ByteBuffer buffer = ByteBuffer.allocate(1);
+        SocketAddress address = null;
+         while (isNotTimeout()){
+           buffer.clear();
            try {
                 address = getChannel().receive(buffer);
             } catch (IOException e) {
@@ -147,8 +146,8 @@ public class DataUpload extends DataImp {
             sendBuf.putInt(count);
             fileChannel.read(sendBuf,sliceUnitMap.get(count),sendBuf,this);
             i++;
-            waitTime2();
-            if (i > 5000) break;
+//            waitTime2();
+            if (i > 10) break;
         }
         LOG.I("可发送分片数量 : "+ sliceUnitMap.size()+"  实际发送量 : "+i);
         sendBuf = ByteBuffer.allocate(mtuValue);
