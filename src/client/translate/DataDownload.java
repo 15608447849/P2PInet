@@ -1,12 +1,8 @@
 package client.translate;
-
-import com.sun.org.apache.regexp.internal.recompile;
 import protocol.Command;
 import protocol.Parse;
-import sun.security.provider.MD5;
 import utils.LOG;
 import utils.MD5Util;
-
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -15,7 +11,6 @@ import java.nio.channels.DatagramChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -127,7 +122,7 @@ public class DataDownload extends DataImp{
                 return;
             }
         }
-        LOG.I("剩余分片 :  ["+sliceUnitMap.keySet()+"]\n数量:"+sliceUnitMap.size() +"\n当前进度值:"+position+",文件实际大小:"+element.fileLength);
+        LOG.I("剩余分片 数量:"+sliceUnitMap.size() +" 当前进度值:"+position+",文件实际大小:"+element.fileLength);
         state = SEND;
     }
 

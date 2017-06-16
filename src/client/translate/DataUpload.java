@@ -137,15 +137,20 @@ public class DataUpload extends DataImp {
             itr.remove();
         }
         ByteBuffer sendBuf = null;
-        LOG.I("可发送分片数量 : "+ sliceUnitMap.size());
+
         long time = System.currentTimeMillis();
+        int i = 0;
         for (Integer count:sliceUnitMap.keySet()){
+
             sendBuf = ByteBuffer.allocate(mtuValue);
             sendBuf.clear();
             sendBuf.putInt(count);
             fileChannel.read(sendBuf,sliceUnitMap.get(count),sendBuf,this);
+            i++;
             waitTime2();
+            if (i > 5000) break;
         }
+        LOG.I("可发送分片数量 : "+ sliceUnitMap.size()+"  实际发送量 : "+i);
         sendBuf = ByteBuffer.allocate(mtuValue);
         //发送完成标识
         sendBuf.clear();
