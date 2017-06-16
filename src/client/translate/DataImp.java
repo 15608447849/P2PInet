@@ -22,7 +22,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
 
 
    public static final int OVER_TIME_ONCE = 200; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1毫秒
-   public static final int OVER_TIME_ONCE_2 = 200; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1/10毫秒
+   public static final int OVER_TIME_ONCE_2 = 10000; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1/10毫秒
     public static final int OVER_MAX = 10; //超时时间 最大次数
     protected int overTimeCount = 0;//超时次数
     protected DataElement element;
@@ -59,7 +59,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
         if (element.type == DataElement.UPLOAD || element.type == DataElement.DOWNLOAD ){
             //确定mtu大小
             sureMTU();
-            setBufferZone();
+//            setBufferZone();
             //确定分片数据
             slice();
             //传输文件
@@ -162,7 +162,6 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
         return element.channel;
     }
     protected void setSliceMap(){
-        mtuValue = mtuValue-20-8;
         sliceUnitMap = cellCount(element.fileLength,mtuValue-INDEX_LEN);
     }
     protected boolean checkAddress(SocketAddress address){
