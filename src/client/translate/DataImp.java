@@ -4,7 +4,10 @@ import protocol.Parse;
 import utils.LOG;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
@@ -55,6 +58,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
         if (element.type == DataElement.UPLOAD || element.type == DataElement.DOWNLOAD ){
             //确定mtu大小
             sureMTU();
+            setBufferZone();
             //确定分片数据
             slice();
             //传输文件
@@ -64,6 +68,17 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
             action.onComplete(element);
         }
     }
+
+    private void setBufferZone(){
+        DatagramSocket socket = element.channel.socket();
+        try {
+            socket.setSendBufferSize(mtuValue*2);
+            socket.setReceiveBufferSize(mtuValue*2);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+    }
+
     protected abstract void sureMTU();
     protected void slice(){
      if (mtuValue>0){setSliceMap();}
