@@ -1,5 +1,6 @@
 package client.translate;
 
+import com.sun.org.apache.regexp.internal.recompile;
 import protocol.Command;
 import protocol.Parse;
 import sun.security.provider.MD5;
@@ -12,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.DatagramChannel;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.concurrent.Future;
 
 /**
@@ -143,7 +145,7 @@ public class DataDownload extends DataImp{
             try {
                 sendDataToAddress(sendBuf);
                 state = RECEIVE;
-                LOG.E("发送传输请求.");
+                LOG.E("发送传输请求. - 已接受的分片数:"+recList.size());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -158,6 +160,7 @@ public class DataDownload extends DataImp{
             state = ERROR;
             return;
         }
+            recList.clear();
             resetTime();
             SocketAddress address = null;
             final DatagramChannel channel = getChannel();
@@ -193,11 +196,15 @@ public class DataDownload extends DataImp{
                     }
                 }
             }
-
     }
 
+
+
+    private ArrayList<Integer> recList = new ArrayList<>();
+    private long time ;
     @Override
     public void completed(Integer integer, Object o) {
+        if (position==0) time=System.currentTimeMillis();
         final ByteBuffer buffer = (ByteBuffer) o;
         buffer.rewind();
         int index = buffer.getInt();
@@ -207,6 +214,7 @@ public class DataDownload extends DataImp{
             buffer.putInt(index);
             buffer.flip();
             sendDataToAddress(buffer);
+            recList.add(index);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -215,6 +223,6 @@ public class DataDownload extends DataImp{
             state = OVER;
         }
        position+=integer;
-        LOG.I("当前进度: "+ String.format("%.2f%%",((double)position / (double) element.fileLength)*100));
+        LOG.I("当前进度: "+ String.format("%.2f%%",((double)position / (double) element.fileLength)*100)+((position==element.fileLength)?" 耗时:"+(System.currentTimeMillis()-time):"."));
     }
 }

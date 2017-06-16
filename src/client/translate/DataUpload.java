@@ -36,20 +36,25 @@ public class DataUpload extends DataImp {
             while (state == SEND && getChannel().isOpen()){
                 try {
                     buffer.clear();
-                    address = getChannel().receive(buffer);
-                    if (address!=null ){
+                    if (state==SEND){
+                        address = getChannel().receive(buffer);
+                    }else{
+                        break;
+                    }
+                    if (checkAddress(address) ){
                         buffer.flip();
+                        if (buffer.remaining()!=4) continue;
                         index = buffer.getInt();
-                        if (index>=0){
+                        if (index>=-1) {
                             receiveSuccessIndexList.add(index);
-                        }
+                        }else
                         if (index==-1) break;
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-
+            LOG.I("本地对方成功接受的回执数: "+ receiveSuccessIndexList.size());
         }
     }
 
@@ -181,8 +186,8 @@ public class DataUpload extends DataImp {
         sendBuf.clear();
         sendBuf.putInt(-1);
         fileChannel.read(sendBuf,element.fileLength,sendBuf,this);
-
         state = RECEIVE;// 接收状态.接收对方回执
+        waitTime();
         LOG.I("数据流已发送完毕.耗时: "+ (System.currentTimeMillis() - time));
     }
     //读取本地流发送成功
