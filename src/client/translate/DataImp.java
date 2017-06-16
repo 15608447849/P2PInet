@@ -47,7 +47,7 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
 
     public DataImp(DataElement element) {
         this.element = element;
-        time_limit = element.type == DataElement.UPLOAD?15000:14000;
+        time_limit = element.type == DataElement.UPLOAD?30*1000:29*1000;
     }
     public DataImp setAction(TranslateAction action) {
         this.action = action;

@@ -41,9 +41,7 @@ public class DataUpload extends DataImp {
                     buf.put(Command.UDPTranslate.mtuCheck);
                 }
                 buf.flip();
-
-                    sendDataToAddress(buf);
-
+                sendDataToAddress(buf);
                 currentMTU--;
             }
 
@@ -54,6 +52,7 @@ public class DataUpload extends DataImp {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            LOG.E("MTU - REC: "+ address+"      "+buf);
             if (checkAddress(address)){
                 buf.flip();
 
@@ -84,6 +83,7 @@ public class DataUpload extends DataImp {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
                 if (checkAddress(address)){
                     buffer.flip();
                     if (buffer.get(0) == Command.UDPTranslate.sliceSure){
