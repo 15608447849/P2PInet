@@ -18,9 +18,9 @@ import java.util.concurrent.TimeUnit;
 public abstract class DataImp extends Thread implements CompletionHandler<Integer,Object> {
 
 
-   public static final int OVER_TIME_ONCE = 100; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1毫秒
+   public static final int OVER_TIME_ONCE = 200; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1毫秒
    public static final int OVER_TIME_ONCE_2 = 5; //单次超时时间 1毫秒(ms)=1 000 000纳秒(ns) 1/10毫秒
-    public static final int OVER_MAX = 2000; //超时时间 最大次数
+    public static final int OVER_MAX = 3; //超时时间 最大次数
     protected int overTimeCount = 0;//超时次数
     protected DataElement element;
     protected TranslateAction action;
@@ -151,7 +151,10 @@ public abstract class DataImp extends Thread implements CompletionHandler<Intege
     protected boolean checkAddress(SocketAddress address){
         return address!=null && address.equals(element.toAddress);
     }
-
+    protected void resetTimeAndCount() {
+        resetTime();
+        overTimeCount = 0;
+    }
     @Override
     public void failed(Throwable throwable, Object o) {
         throwable.printStackTrace();

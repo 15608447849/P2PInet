@@ -16,6 +16,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by user on 2017/6/13.
@@ -112,8 +113,8 @@ public class DataDownload extends DataImp{
      * @param fileChannel
      */
     private void checkComplete(AsynchronousFileChannel fileChannel) {
-        if (sliceUnitMap.size()!=0 || position!=element.fileLength){
-            LOG.I("剩余分片 : "+sliceUnitMap+" 数量:"+sliceUnitMap.size() +" 当前进度值:"+position+",文件实际大小:"+element );
+        if (!sliceUnitMap.isEmpty() || position!=element.fileLength){
+            LOG.I("剩余分片 :  ["+sliceUnitMap.keySet()+"]\n数量:"+sliceUnitMap.size() +"\n当前进度值:"+position+",文件实际大小:"+element );
             state = SEND;
             return;
         }
@@ -197,7 +198,7 @@ public class DataDownload extends DataImp{
                 if (checkAddress(address) ){
                     recBuf.flip();
                     if (recBuf.remaining()<4) continue;
-                    resetTime();
+                    resetTimeAndCount();
                     count = recBuf.getInt();
                     if (sliceUnitMap.containsKey(count)) {
                         fileChannel.write(recBuf, sliceUnitMap.get(count), count, this);
@@ -217,20 +218,26 @@ public class DataDownload extends DataImp{
                 }
             }
     }
-
+    private ReentrantLock lock = new ReentrantLock();
     @Override
     public void completed(Integer integer, Object o) {
-        if (position==0) time=System.currentTimeMillis();
-        position+=integer;
-        int index = (int) o;
-        recList.add(index);
-        //已写入
-        sliceUnitMap.remove(index); //移除下标
-        if (position == element.fileLength){
-            LOG.I("当前进度: "+ String.format("%.2f%%",((double)position / (double) element.fileLength)*100)+((position==element.fileLength)?" 耗时:"+(System.currentTimeMillis()-time):"."));
+        try{
+            lock.lock();
+            if (position==0) time=System.currentTimeMillis();
+            position+=integer;
+            int index = (int) o;
+            recList.add(index);
+            //已写入
+            sliceUnitMap.remove(index); //移除下标
+            if (position == element.fileLength){
+                LOG.I("当前进度: "+ String.format("%.2f%%",((double)position / (double) element.fileLength)*100)+((position==element.fileLength)?" 耗时:"+(System.currentTimeMillis()-time):"."));
+            }
+            if (sliceUnitMap.size() == 0 || position==element.fileLength){
+                state = OVER;
+            }
+        }finally {
+            lock.unlock();
         }
-        if (sliceUnitMap.size() == 0 || position==element.fileLength){
-            state = OVER;
-        }
+
     }
 }

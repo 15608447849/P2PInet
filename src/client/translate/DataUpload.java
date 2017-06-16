@@ -144,7 +144,7 @@ public class DataUpload extends DataImp {
             sendBuf.clear();
             sendBuf.putInt(count);
             fileChannel.read(sendBuf,sliceUnitMap.get(count),sendBuf,this);
-//            waitTime2();
+            waitTime2();
         }
         sendBuf = ByteBuffer.allocate(mtuValue);
         //发送完成标识
@@ -179,7 +179,7 @@ public class DataUpload extends DataImp {
                 e.printStackTrace();
             }
             if (checkAddress(address)){
-                resetTime();
+                resetTimeAndCount();
                 recBuf.flip();
                 if (recBuf.get(0) == Command.UDPTranslate.over){
                     LOG.I(" 收到 结束任务.");
@@ -212,5 +212,7 @@ public class DataUpload extends DataImp {
 
 
     }
+
+
 
 }
