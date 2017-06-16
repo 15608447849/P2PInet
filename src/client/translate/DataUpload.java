@@ -175,7 +175,7 @@ public class DataUpload extends DataImp {
             sendBuf.clear();
             sendBuf.putInt(count);
             fileChannel.read(sendBuf,sliceUnitMap.get(count),sendBuf,this);
-            waitTime2();
+//            waitTime2();
         }
         //发送完成标识
         sendBuf.clear();
@@ -226,8 +226,14 @@ public class DataUpload extends DataImp {
                 }
             }
             if (!isNotTimeout()){
-                LOG.E("接受数据应答超时.");
-                state = ERROR;
+                if (overTimeCount>OVER_MAX){
+                    LOG.E("接受数据应答超时.");
+                    state = ERROR;
+                }else{
+                    resetTime();
+                    overTimeCount++;
+                }
+
             }
         }
 

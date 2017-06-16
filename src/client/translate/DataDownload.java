@@ -18,8 +18,7 @@ import java.util.concurrent.Future;
  * Created by user on 2017/6/13.
  */
 public class DataDownload extends DataImp{
-    private int overTimeCount = 0;//超时次数
-    private static final int OVER_MAX = 3; //超时时间 最大次数
+
     //进度
     private long position = 0;
     public DataDownload(DataElement element) {
@@ -185,6 +184,7 @@ public class DataDownload extends DataImp{
                 }
                 if (!isNotTimeout()){
                     if (overTimeCount<OVER_MAX){ //没有超过超时次数
+                        overTimeCount++;
                         LOG.E("接受数据应答超时.请求重新发送");
                         state = SEND;
                     }else{
@@ -215,6 +215,6 @@ public class DataDownload extends DataImp{
             state = OVER;
         }
        position+=integer;
-        LOG.I("当前进度: "+ String.format("{0:P}",((double)position/(double) element.fileLength)));
+        LOG.I("当前进度: "+ String.format("%f%%",((double)position / (double) element.fileLength)*100));
     }
 }
